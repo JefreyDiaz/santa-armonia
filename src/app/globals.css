@@ -1,0 +1,117 @@
+/* Ocultar scrollbar vertical en el grid de productos, pero permitir scroll con el dedo */
+.menu-grid-responsive {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.menu-grid-responsive::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+/* Responsive grid para máximo 4 columnas en desktop y 2 en mobile */
+@media (min-width: 700px) {
+  .menu-grid-responsive {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+@media (max-width: 699px) {
+  .menu-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@import "tailwindcss";
+
+/* ===== VARIABLES CSS - SPA SANTA ARMONÍA ===== */
+:root {
+  /* Fondo blanco */
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Colores principales del Spa - Basados en el logo oficial */
+  --spa-primary: #5D9C9C;      /* Turquesa principal del logo */
+  --spa-secondary: #8B6B8B;    /* Púrpura del logo */
+  --spa-accent: #B8A9C9;       /* Lavanda claro */
+  --spa-dark: #4A7A7A;         /* Turquesa oscuro */
+  --spa-light: #F0EDF5;        /* Lavanda muy suave */
+
+  /* Colores complementarios */
+  --spa-sage: #9CAF88;         /* Verde salvia */
+  --spa-sage-light: #B8C9A8;   /* Verde salvia claro */
+  --spa-cream: #F5F3E8;        /* Crema */
+  --spa-warm: #E8D5C4;         /* Beige cálido */
+
+  /* Colores de estado */
+  --spa-success: #7FB069;      /* Verde éxito */
+  --spa-warning: #F4A261;      /* Naranja advertencia */
+  --spa-error: #E76F51;        /* Rojo error */
+  --spa-info: #6B9AC4;         /* Azul información */
+
+  /* Colores de texto */
+  --spa-text-primary: #2C3E50; /* Texto principal */
+  --spa-text-secondary: #5D6D7E; /* Texto secundario */
+  --spa-text-light: #85929E;   /* Texto claro */
+
+  /* Gradientes */
+  --spa-gradient-primary: linear-gradient(135deg, var(--spa-primary) 0%, var(--spa-secondary) 100%);
+  --spa-gradient-soft: linear-gradient(135deg, #F0EDF5 0%, #F5F3E8 100%);
+  --spa-gradient-warm: linear-gradient(135deg, var(--spa-warm) 0%, var(--spa-cream) 100%);
+  --spa-gradient-logo: linear-gradient(135deg, #5D9C9C 0%, #8B6B8B 100%);
+
+  /* Sombras */
+  --spa-shadow-soft: 0 2px 8px rgba(139, 125, 155, 0.1);
+  --spa-shadow-medium: 0 4px 16px rgba(139, 125, 155, 0.15);
+  --spa-shadow-strong: 0 8px 32px rgba(139, 125, 155, 0.2);
+
+  /* Bordes */
+  --spa-border-radius: 12px;
+  --spa-border-radius-small: 8px;
+  --spa-border-color: var(--spa-accent);
+
+  /* Espaciado */
+  --spa-spacing-xs: 4px;
+  --spa-spacing-sm: 8px;
+  --spa-spacing-md: 16px;
+  --spa-spacing-lg: 24px;
+  --spa-spacing-xl: 32px;
+  --spa-spacing-xxl: 48px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

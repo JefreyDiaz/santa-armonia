@@ -1,0 +1,283 @@
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
+
+export default function Banner() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  
+  // Estados para scroll reveal
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLogoVisible, setIsLogoVisible] = useState(false);
+  const [isDecorationsVisible, setIsDecorationsVisible] = useState(false);
+  
+  // Referencias para Intersection Observer
+  const sectionRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Intersection Observer para scroll reveal
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (entry.target === sectionRef.current) {
+            setIsVisible(true);
+            setTimeout(() => setIsDecorationsVisible(true), 300);
+            setTimeout(() => setIsLogoVisible(true), 600);
+          }
+        }
+      });
+    }, observerOptions);
+
+    // Observar elementos
+    if (sectionRef.current) observer.observe(sectionRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Manejar la carga del video
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      const handleLoadedData = () => {
+        setIsVideoLoaded(true);
+      };
+      
+      const handleError = () => {
+        console.warn('Error cargando video, usando imagen de fallback');
+        setIsVideoLoaded(false);
+      };
+
+      video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('error', handleError);
+      
+      return () => {
+        video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('error', handleError);
+      };
+    }
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100dvh',
+        color: '#fff',
+        textAlign: 'center',
+        overflow: 'hidden',
+        fontFamily: 'serif',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 0,
+        margin: 0,
+        padding: 0,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transition: 'all 1s ease-out',
+      }}
+    >
+      <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      
+      {/* Elementos decorativos */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '10%',
+          left: '5%',
+          width: '100px',
+          height: '100px',
+          background: 'var(--spa-gradient-primary)',
+          borderRadius: '50%',
+          opacity: isDecorationsVisible ? 0.1 : 0,
+          animation: isDecorationsVisible ? 'float 6s ease-in-out infinite' : 'none',
+          transition: 'opacity 1s ease-out',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '15%',
+          right: '8%',
+          width: '80px',
+          height: '80px',
+          background: 'var(--spa-accent)',
+          borderRadius: '50%',
+          opacity: isDecorationsVisible ? 0.15 : 0,
+          animation: isDecorationsVisible ? 'float 8s ease-in-out infinite reverse' : 'none',
+          transition: 'opacity 1s ease-out 0.3s',
+        }}
+      />
+      
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes slideInFromBottom {
+          from {
+            opacity: 0;
+            transform: translateY(60px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+      
+      {/* Video de fondo para spa */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100dvh',
+          zIndex: -2,
+          margin: 0,
+          padding: 0,
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(1.1)',
+          transition: 'all 1.5s ease-out',
+        }}
+      >
+        {/* Imagen de fallback mientras carga el video */}
+        {!isVideoLoaded && (
+          <Image
+            src="/images/Servicios/general/ed9000f0cd2e51871fa54a100a4d7c62-cover.jpg"
+            alt="Santa Armonía Spa Background"
+            fill
+            style={{
+              objectFit: 'cover',
+              objectPosition: 'center',
+            }}
+            priority
+          />
+        )}
+        
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: isVideoLoaded ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+          }}
+        >
+          <source src="/videos/hero-1.mp4" type="video/mp4" />
+          Tu navegador no soporta videos HTML5.
+        </video>
+      </div>
+      
+      {/* Overlay degradado para mejorar legibilidad */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100dvh',
+          zIndex: -1,
+          pointerEvents: 'none',
+          background: 'linear-gradient(135deg, rgba(139, 125, 155, 0.1) 0%, rgba(184, 169, 201, 0.15) 50%, rgba(212, 196, 231, 0.2) 100%)',
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 1.5s ease-out 0.3s',
+        }}
+      />
+      
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          ref={logoRef}
+          style={{
+            background: 'rgba(255,255,255,0.7)',
+            borderRadius: 'var(--spa-border-radius)',
+            padding: isMobile ? '4vw 3vw' : '6vw 4vw',
+            maxWidth: '90vw',
+            boxShadow: 'var(--spa-shadow-strong)',
+            margin: '0 auto',
+            display: 'inline-block',
+            border: '1px solid rgba(212, 196, 231, 0.3)',
+            backdropFilter: 'blur(10px)',
+            opacity: isLogoVisible ? 1 : 0,
+            transform: isLogoVisible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.9)',
+            transition: 'all 1s ease-out',
+          }}
+        >
+          <Image
+            src="/images/multimedia-santa-armonia/logo_page-0001.png"
+            alt="Santa Armonía Facial & Corporal"
+            width={400}
+            height={200}
+            style={{
+              width: isMobile ? '70vw' : '50vw',
+              height: 'auto',
+              maxWidth: '500px',
+              minWidth: '250px',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 4px 16px rgba(139, 107, 139, 0.2))',
+            }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
