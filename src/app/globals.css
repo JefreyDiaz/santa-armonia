@@ -23,6 +23,33 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  /* Prevenir desbordamiento horizontal que causa la franja blanca */
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Asegurar que todos los elementos respeten el ancho del viewport */
+* {
+  box-sizing: border-box;
+}
+
+/* Estilos específicos para móviles - Solucionar problemas de viewport */
+@media screen and (max-width: 768px) {
+  html, body {
+    /* Usar altura fija en móviles para evitar problemas con 100dvh */
+    height: 100vh;
+    min-height: 100vh;
+    /* Prevenir zoom y scroll horizontal */
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Asegurar que no haya espacio extra */
+    position: relative;
+  }
+  
+  /* Asegurar que el contenido principal ocupe toda la altura */
+  main, #__next {
+    min-height: 100vh;
+  }
 }
 
 @import "tailwindcss";

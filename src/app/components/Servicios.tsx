@@ -189,6 +189,7 @@ export default function Servicios() {
               style={{
                 position: 'relative',
                 width: '280px',
+                maxWidth: '100%',
                 height: '100%',
                 borderRadius: 'var(--spa-border-radius)',
                 border: '2px solid var(--spa-border-color)',
@@ -201,7 +202,7 @@ export default function Servicios() {
                 background: 'white',
                 display: 'flex',
                 flexDirection: 'column',
-                flex: '1 1 280px',
+                flex: '1 1 min(280px, 100%)',
                 animation: isCardsVisible ? 
                   (idx === 0 ? 'slideInFromLeft 0.8s ease-out 0.2s both' : 
                    idx === 1 ? 'slideInFromRight 0.8s ease-out 0.2s both' : 

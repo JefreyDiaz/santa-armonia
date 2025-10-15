@@ -92,6 +92,23 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+* {
+  box-sizing: border-box;
+}
+@media screen and (max-width: 768px) {
+  html, body {
+    height: 100vh;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+  }
+  main, #__next {
+    min-height: 100vh;
+  }
 }
 @layer theme, base, components, utilities;
 @layer theme {

@@ -44,8 +44,7 @@ export default function Footer() {
 
   return (
     <div style={{
-      padding: '0 var(--spa-spacing-lg)',
-      marginTop: 'var(--spa-spacing-xxl)'
+      padding: '0 var(--spa-spacing-lg)'
     }}>
       <footer 
         ref={footerRef}
@@ -448,7 +447,7 @@ export default function Footer() {
           ref={copyrightRef}
           style={{
             textAlign: 'center',
-            padding: 'var(--spa-spacing-lg) var(--spa-spacing-lg) 0 var(--spa-spacing-lg)',
+            padding: 'var(--spa-spacing-md) var(--spa-spacing-lg) var(--spa-spacing-md) var(--spa-spacing-lg)',
             borderTop: '1px solid rgba(255, 255, 255, 0.3)',
             color: '#2C3E50',
             fontSize: '14px',
