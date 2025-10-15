@@ -51,12 +51,7 @@ const TRATAMIENTOS = {
     { id: 'tratamiento-despigmentante', nombre: 'TRATAMIENTO DESPIGMENTANTE (ANTI MANCHAS)', precio: 120000, duracion: 45, descripcion: 'Tratamiento basado en aplicación de diferentes principios activos para mejorar la apariencia de los melasmas y prevenir su aparición' },
     { id: 'tratamiento-anti-acne', nombre: 'TRATAMIENTO ANTI ACNÉ', precio: 110000, duracion: 45, descripcion: 'Tratamiento basado en la aplicación de diferentes principios activos para mejorar los diferentes tipos de acné y prevenir su proliferación' },
     { id: 'tratamiento-anti-edad', nombre: 'TRATAMIENTO ANTI EDAD', precio: 130000, duracion: 45, descripcion: 'Tratamiento basado en la aplicación de diferentes principios activos indicados para mejorar los signos de envejecimiento de la piel' },
-    { id: 'relleno-labios', nombre: 'RELLENO DE LABIOS CON ÁCIDO HIALURÓNICO', precio: 750000, duracion: 60, descripcion: 'Procedimiento no quirúrgico que se realiza mediante la inyección de ácido hialurónico, sustancia segura y reabsorbible' },
-    { id: 'depilacion-cejas', nombre: 'DEPILACIÓN CON CERA - CEJAS', precio: 15000, duracion: 15, descripcion: 'Depilación con cera especializada para cejas, definiendo la forma perfecta para tu rostro' },
-    { id: 'depilacion-bigote', nombre: 'DEPILACIÓN CON CERA - BIGOTE', precio: 7000, duracion: 10, descripcion: 'Depilación con cera para el área del bigote, dejando la piel suave y sin vello' },
-    { id: 'depilacion-nariz', nombre: 'DEPILACIÓN CON CERA - NARIZ', precio: 10000, duracion: 10, descripcion: 'Depilación con cera para el área de la nariz, eliminando vello no deseado' },
-    { id: 'depilacion-menton', nombre: 'DEPILACIÓN CON CERA - MENTÓN', precio: 8000, duracion: 10, descripcion: 'Depilación con cera para el área del mentón, dejando la piel suave y definida' },
-    { id: 'depilacion-rostro', nombre: 'DEPILACIÓN CON CERA - ROSTRO', precio: 25000, duracion: 30, descripcion: 'Depilación completa del rostro con cera, eliminando todo el vello facial no deseado' }
+    { id: 'relleno-labios', nombre: 'RELLENO DE LABIOS CON ÁCIDO HIALURÓNICO', precio: 750000, duracion: 60, descripcion: 'Procedimiento no quirúrgico que se realiza mediante la inyección de ácido hialurónico, sustancia segura y reabsorbible' }
   ]
 };
 

@@ -180,64 +180,7 @@ const faciales = [
       'Definición del contorno'
     ]
   },
-  {
-    id: 'depilacion-cejas',
-    nombre: 'DEPILACIÓN CON CERA - CEJAS',
-    precio: 15000,
-    duracion: 15,
-    descripcion: 'Depilación con cera especializada para cejas, definiendo la forma perfecta para tu rostro.',
-    beneficios: [
-      'Define la forma de las cejas',
-      'Resultado limpio y duradero',
-      'Técnica profesional',
-      'Cuidado de la piel'
-    ],
-    imagen: '/images/Servicios/Facial/0038a5750b4f8c517163a5e507f4866e-xlarge.jpg',
-    incluye: [
-      'Limpieza del área',
-      'Depilación con cera',
-      'Definición de forma',
-      'Cuidado post-depilación'
-    ]
-  },
-  {
-    id: 'depilacion-bigote',
-    nombre: 'DEPILACIÓN CON CERA - BIGOTE',
-    precio: 7000,
-    duracion: 10,
-    descripcion: 'Depilación con cera para el área del bigote, dejando la piel suave y sin vello.',
-    beneficios: [
-      'Piel suave y sin vello',
-      'Resultado duradero',
-      'Técnica profesional',
-      'Cuidado de la piel'
-    ],
-    imagen: '/images/Servicios/Facial/cb1f7291e94b748603a7a3cfe036c275-xxlarge.jpg',
-    incluye: [
-      'Limpieza del área',
-      'Depilación con cera',
-      'Cuidado post-depilación'
-    ]
-  },
-  {
-    id: 'depilacion-nariz',
-    nombre: 'DEPILACIÓN CON CERA - NARIZ',
-    precio: 10000,
-    duracion: 10,
-    descripcion: 'Depilación con cera para el área de la nariz, eliminando vello no deseado.',
-    beneficios: [
-      'Elimina vello no deseado',
-      'Piel suave',
-      'Resultado duradero',
-      'Técnica profesional'
-    ],
-    imagen: '/images/Servicios/Facial/1641d0e14126d0d9f943bccd767dcb50-xxlarge.jpg',
-    incluye: [
-      'Limpieza del área',
-      'Depilación con cera',
-      'Cuidado post-depilación'
-    ]
-  } 
+   
   
 ];
 
