@@ -1,7 +1,8 @@
 {
-  "/services/otros/page": "app/services/otros/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
-  "/reservar/page": "app/reservar/page.js",
+  "/services/otros/page": "app/services/otros/page.js",
   "/services/corporales/page": "app/services/corporales/page.js",
-  "/services/faciales/page": "app/services/faciales/page.js"
+  "/services/faciales/page": "app/services/faciales/page.js",
+  "/reservar/page": "app/reservar/page.js"
 }

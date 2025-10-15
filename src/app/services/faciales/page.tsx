@@ -263,7 +263,7 @@ export default function FacialesPage() {
             style={{
               position: 'absolute',
               top: 0,
-              left: 0,
+              left: 'var(--spa-spacing-sm)',
               background: 'var(--spa-gradient-primary)',
               color: 'white',
               border: 'none',

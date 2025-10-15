@@ -181,7 +181,7 @@ export default function OtrosServiciosPage() {
             style={{
               position: 'absolute',
               top: 0,
-              left: 0,
+              left: 'var(--spa-spacing-sm)',
               background: 'var(--spa-gradient-primary)',
               color: 'white',
               border: 'none',
@@ -797,7 +797,7 @@ export default function OtrosServiciosPage() {
             Nuestras especialistas te ayudarán a elegir el servicio perfecto 
             según tus necesidades y objetivos específicos.
           </p>
-          <Link href="/reservar" style={{ textDecoration: 'none' }}>
+          <Link href="/reservar?seleccion=Valoración" style={{ textDecoration: 'none' }}>
             <button
               style={{
                 background: 'var(--spa-gradient-primary)',

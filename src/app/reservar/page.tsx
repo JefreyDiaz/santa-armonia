@@ -642,11 +642,7 @@ const ReservarContent = memo(function ReservarContent() {
                     }}>
                       <button
                         type="button"
-                        onClick={() => {
-                          setForm(prev => ({ ...prev, tratamiento: '' }));
-                          setCategoriaSeleccionada('corporales');
-                          window.history.replaceState({}, '', '/reservar');
-                        }}
+                        onClick={() => window.history.back()}
                         style={{
                           background: 'transparent',
                           color: 'var(--spa-primary)',
@@ -667,7 +663,7 @@ const ReservarContent = memo(function ReservarContent() {
                           e.currentTarget.style.color = 'var(--spa-primary)';
                         }}
                       >
-                        Cambiar tratamiento
+                        Cambiar Tratamiento
                       </button>
                     </div>
                   )}

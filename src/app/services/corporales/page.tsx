@@ -100,7 +100,7 @@ export default function CorporalesPage() {
             style={{
               position: 'absolute',
               top: 0,
-              left: 0,
+              left: 'var(--spa-spacing-sm)',
               background: 'var(--spa-gradient-primary)',
               color: 'white',
               border: 'none',
@@ -169,9 +169,11 @@ export default function CorporalesPage() {
         
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: 'var(--spa-spacing-xl)',
           marginBottom: 'var(--spa-spacing-xxl)',
+          justifyContent: 'center',
+          maxWidth: '100%',
         }}>
           {tratamientosCorporales.map((tratamiento) => (
             <div
@@ -185,6 +187,9 @@ export default function CorporalesPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
+                width: '100%',
+                maxWidth: '400px',
+                margin: '0 auto',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-5px)';
