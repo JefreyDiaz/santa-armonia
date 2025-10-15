@@ -2,83 +2,63 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
-// Servicios de depilación
-const depilacionesFaciales = [
+// Servicios de depilación para el modal
+const serviciosDepilacion = [
   {
     id: 'depilacion-cejas',
     nombre: 'Depilación de Cejas',
-    duracion: '30 min',
-    precio: 25000,
+    categoria: 'Facial',
+    colorCategoria: '#8B5CF6',
     descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
+    duracion: '30 min',
+    precio: 15000,
   },
   {
     id: 'depilacion-bigote',
     nombre: 'Depilación de Bigote',
-    duracion: '20 min',
-    precio: 20000,
+    categoria: 'Facial',
+    colorCategoria: '#8B5CF6',
     descripcion: 'Depilación de vello facial superior con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
-  },
-  {
-    id: 'depilacion-barbilla',
-    nombre: 'Depilación de Barbilla',
-    duracion: '25 min',
-    precio: 22000,
-    descripcion: 'Depilación de vello en la zona de la barbilla.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
-  },
-  {
-    id: 'depilacion-facial-completa',
-    nombre: 'Depilación Facial Completa',
-    duracion: '45 min',
-    precio: 45000,
-    descripcion: 'Depilación completa del rostro incluyendo cejas, bigote, barbilla y patillas.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
-  }
-];
-
-const depilacionesCorporales = [
-  {
-    id: 'depilacion-brazos',
-    nombre: 'Depilación de Brazos',
-    duracion: '45 min',
-    precio: 45000,
-    descripcion: 'Depilación completa de brazos con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
-  },
-  {
-    id: 'depilacion-piernas',
-    nombre: 'Depilación de Piernas',
-    duracion: '1 hora',
-    precio: 65000,
-    descripcion: 'Depilación completa de piernas con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
+    duracion: '20 min',
+    precio: 8000,
   },
   {
     id: 'depilacion-axilas',
     nombre: 'Depilación de Axilas',
-    duracion: '20 min',
-    precio: 20000,
-    descripcion: 'Depilación de axilas con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
+    categoria: 'Corporal',
+    colorCategoria: '#10B981',
+    descripcion: 'Depilación de axilas con cera para una piel suave y sin vello.',
+    duracion: '10 min',
+    precio: 15000,
+  },
+  {
+    id: 'depilacion-piernas-completas',
+    nombre: 'Depilación Piernas Completas',
+    categoria: 'Corporal',
+    colorCategoria: '#10B981',
+    descripcion: 'Depilación completa de piernas con cera desde los muslos hasta los tobillos.',
+    duracion: '1 hora',
+    precio: 55000,
+  },
+  {
+    id: 'depilacion-media-pierna',
+    nombre: 'Depilación Media Pierna',
+    categoria: 'Corporal',
+    colorCategoria: '#10B981',
+    descripcion: 'Depilación de piernas desde la rodilla hasta el tobillo con cera.',
+    duracion: '40 min',
+    precio: 35000,
   },
   {
     id: 'depilacion-bikini',
     nombre: 'Depilación de Bikini',
-    duracion: '30 min',
+    categoria: 'Corporal',
+    colorCategoria: '#10B981',
+    descripcion: 'Depilación de zona íntima con cera para una piel suave y sin vello.',
+    duracion: '20 min',
     precio: 35000,
-    descripcion: 'Depilación de zona íntima con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
-  },
-  {
-    id: 'depilacion-espalda',
-    nombre: 'Depilación de Espalda',
-    duracion: '1 hora',
-    precio: 70000,
-    descripcion: 'Depilación completa de espalda con cera.',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
   }
 ];
 
@@ -169,6 +149,17 @@ const sueroTerapia = {
 };
 
 export default function OtrosServiciosPage() {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleSelectService = (servicio) => {
+    // Redirigir a la página de reserva con el servicio seleccionado
+    window.location.href = `/reservar?seleccion=${encodeURIComponent(servicio.nombre)}`;
+  };
+
   return (
     <main style={{
       background: 'var(--spa-gradient-soft)',
@@ -235,7 +226,7 @@ export default function OtrosServiciosPage() {
           margin: '0 auto',
           lineHeight: 1.6,
         }}>
-          Descubre nuestra amplia gama de servicios adicionales: depilaciones, 
+          Descubre nuestra amplia gama de servicios adicionales: 
           masajes relajantes, tratamientos especializados y más.
         </p>
       </div>
@@ -246,7 +237,7 @@ export default function OtrosServiciosPage() {
         padding: '0 var(--spa-spacing-md)',
       }}>
 
-        {/* Depilaciones Faciales */}
+        {/* Depilaciones con Cera */}
         <h2 style={{
           fontSize: '2.5rem',
           color: 'var(--spa-primary)',
@@ -255,231 +246,104 @@ export default function OtrosServiciosPage() {
           textAlign: 'center',
           marginBottom: 'var(--spa-spacing-xl)',
         }}>
-          Depilaciones Faciales
+          Depilaciones con Cera
         </h2>
         
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 'var(--spa-spacing-lg)',
+          display: 'flex',
+          justifyContent: 'center',
           marginBottom: 'var(--spa-spacing-xxl)',
         }}>
-          {depilacionesFaciales.map((servicio) => (
-            <div
-              key={servicio.id}
-              style={{
-                background: 'white',
-                borderRadius: 'var(--spa-border-radius)',
-                padding: 'var(--spa-spacing-lg)',
-                boxShadow: 'var(--spa-shadow-medium)',
-                transition: 'all 0.3s ease',
-                textAlign: 'center',
+          <div style={{
+            background: 'white',
+            borderRadius: 'var(--spa-border-radius)',
+            padding: 'var(--spa-spacing-xl)',
+            boxShadow: 'var(--spa-shadow-medium)',
+            transition: 'all 0.3s ease',
+            textAlign: 'center',
+            maxWidth: '500px',
+            width: '100%',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.boxShadow = 'var(--spa-shadow-strong)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
+          }}
+          >
+            <h3 style={{
+              color: 'var(--spa-primary)',
+              fontSize: '1.5rem',
+              fontFamily: 'Montserrat, sans-serif',
+              fontWeight: '600',
+              marginBottom: 'var(--spa-spacing-md)',
+            }}>
+              Depilación con Cera
+            </h3>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--spa-spacing-md)',
+            }}>
+              <span style={{
+                color: 'var(--spa-text-light)',
+                fontSize: '0.9rem',
                 display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
+                alignItems: 'center',
+                gap: '4px',
+              }}>
+                ⏱️ Variable
+              </span>
+              <span style={{
+                color: 'var(--spa-primary)',
+                fontWeight: '700',
+                fontSize: '1.1rem',
+              }}>
+                Según Área
+              </span>
+            </div>
+
+            <p style={{
+              color: 'var(--spa-text-secondary)',
+              fontSize: '1rem',
+              lineHeight: 1.6,
+              marginBottom: 'var(--spa-spacing-lg)',
+            }}>
+              Depilación profesional con cera en diferentes zonas del cuerpo. 
+              Selecciona la zona específica al hacer tu reserva.
+            </p>
+            
+            <button
+              onClick={() => setShowModal(true)}
+              style={{
+                width: '100%',
+                background: 'var(--spa-gradient-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--spa-border-radius-small)',
+                padding: 'var(--spa-spacing-md)',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontFamily: 'Montserrat, sans-serif',
+                transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = 'var(--spa-shadow-strong)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              <h3 style={{
-                color: 'var(--spa-primary)',
-                fontSize: '1.3rem',
-                fontFamily: 'Montserrat, sans-serif',
-                fontWeight: '600',
-                marginBottom: 'var(--spa-spacing-md)',
-              }}>
-                {servicio.nombre}
-              </h3>
-              
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 'var(--spa-spacing-sm)',
-              }}>
-                <span style={{
-                  color: 'var(--spa-text-light)',
-                  fontSize: '0.9rem',
-                }}>
-                  ⏱️ {servicio.duracion}
-                </span>
-                <span style={{
-                  color: 'var(--spa-primary)',
-                  fontWeight: '700',
-                  fontSize: '1.3rem',
-                }}>
-                  ${servicio.precio.toLocaleString('es-CO')}
-                </span>
-              </div>
-
-              <p style={{
-                color: 'var(--spa-text-secondary)',
-                fontSize: '1rem',
-                lineHeight: 1.6,
-                marginBottom: 'var(--spa-spacing-lg)',
-                flex: 1,
-              }}>
-                {servicio.descripcion}
-              </p>
-              
-              <div style={{ marginTop: 'auto' }}>
-                <Link
-                  href={`/reservar?seleccion=${encodeURIComponent(servicio.nombre)}`}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button
-                    style={{
-                      width: '100%',
-                      background: 'var(--spa-gradient-primary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 'var(--spa-border-radius-small)',
-                      padding: 'var(--spa-spacing-md)',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontFamily: 'Montserrat, sans-serif',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    Reservar {servicio.nombre}
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Depilaciones Corporales */}
-        <h2 style={{
-          fontSize: '2.5rem',
-          color: 'var(--spa-primary)',
-          fontFamily: 'Montserrat, sans-serif',
-          fontWeight: '600',
-          textAlign: 'center',
-          marginBottom: 'var(--spa-spacing-xl)',
-        }}>
-          Depilaciones Corporales
-        </h2>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 'var(--spa-spacing-lg)',
-          marginBottom: 'var(--spa-spacing-xxl)',
-        }}>
-          {depilacionesCorporales.map((servicio) => (
-            <div
-              key={servicio.id}
-              style={{
-                background: 'white',
-                borderRadius: 'var(--spa-border-radius)',
-                padding: 'var(--spa-spacing-lg)',
-                boxShadow: 'var(--spa-shadow-medium)',
-                transition: 'all 0.3s ease',
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = 'var(--spa-shadow-strong)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
-              }}
-            >
-              <h3 style={{
-                color: 'var(--spa-primary)',
-                fontSize: '1.3rem',
-                fontFamily: 'Montserrat, sans-serif',
-                fontWeight: '600',
-                marginBottom: 'var(--spa-spacing-md)',
-              }}>
-                {servicio.nombre}
-              </h3>
-              
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 'var(--spa-spacing-sm)',
-              }}>
-                <span style={{
-                  color: 'var(--spa-text-light)',
-                  fontSize: '0.9rem',
-                }}>
-                  ⏱️ {servicio.duracion}
-                </span>
-                <span style={{
-                  color: 'var(--spa-primary)',
-                  fontWeight: '700',
-                  fontSize: '1.3rem',
-                }}>
-                  ${servicio.precio.toLocaleString('es-CO')}
-                </span>
-              </div>
-
-              <p style={{
-                color: 'var(--spa-text-secondary)',
-                fontSize: '1rem',
-                lineHeight: 1.6,
-                marginBottom: 'var(--spa-spacing-lg)',
-                flex: 1,
-              }}>
-                {servicio.descripcion}
-              </p>
-              
-              <div style={{ marginTop: 'auto' }}>
-                <Link
-                  href={`/reservar?seleccion=${encodeURIComponent(servicio.nombre)}`}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <button
-                    style={{
-                      width: '100%',
-                      background: 'var(--spa-gradient-primary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 'var(--spa-border-radius-small)',
-                      padding: 'var(--spa-spacing-md)',
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontFamily: 'Montserrat, sans-serif',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    Reservar {servicio.nombre}
-                  </button>
-                </Link>
-              </div>
-            </div>
-          ))}
+              Reservar Depilación con Cera
+            </button>
+          </div>
         </div>
 
         {/* Masajes Relajantes */}
@@ -962,6 +826,208 @@ export default function OtrosServiciosPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modal de Depilaciones */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: 'var(--spa-spacing-sm)',
+        }}
+        onClick={handleCloseModal}
+        >
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: 'var(--spa-border-radius)',
+            padding: 'var(--spa-spacing-xl)',
+            maxWidth: '800px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative',
+            boxShadow: 'var(--spa-shadow-strong)',
+            margin: '0 auto',
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Botón de cerrar */}
+            <button
+              onClick={handleCloseModal}
+              style={{
+                position: 'absolute',
+                top: 'var(--spa-spacing-md)',
+                right: 'var(--spa-spacing-md)',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: 'var(--spa-text-light)',
+                padding: '4px',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--spa-gradient-soft)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              ×
+            </button>
+
+            {/* Título del modal */}
+            <h2 style={{
+              color: 'var(--spa-primary)',
+              fontSize: '2rem',
+              fontFamily: 'Montserrat, sans-serif',
+              fontWeight: '600',
+              textAlign: 'center',
+              marginBottom: 'var(--spa-spacing-xl)',
+              marginTop: 'var(--spa-spacing-sm)',
+            }}>
+              Selecciona tu Depilación
+            </h2>
+
+            {/* Grid de servicios */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: 'var(--spa-spacing-md)',
+              justifyContent: 'center',
+              maxWidth: '100%',
+              placeItems: 'center',
+            }}>
+              {serviciosDepilacion.map((servicio) => (
+                <div
+                  key={servicio.id}
+                  style={{
+                    background: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 'var(--spa-border-radius-small)',
+                    padding: 'var(--spa-spacing-lg)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    width: '100%',
+                    maxWidth: '300px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
+                    e.currentTarget.style.borderColor = 'var(--spa-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: 'var(--spa-spacing-sm)',
+                  }}>
+                    <h3 style={{
+                      color: 'var(--spa-primary)',
+                      fontSize: '1.1rem',
+                      fontFamily: 'Montserrat, sans-serif',
+                      fontWeight: '600',
+                      margin: 0,
+                      flex: 1,
+                    }}>
+                      {servicio.nombre}
+                    </h3>
+                    <span style={{
+                      backgroundColor: servicio.colorCategoria,
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      marginLeft: 'var(--spa-spacing-sm)',
+                    }}>
+                      {servicio.categoria}
+                    </span>
+                  </div>
+
+                  <p style={{
+                    color: 'var(--spa-text-secondary)',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.5,
+                    marginBottom: 'var(--spa-spacing-md)',
+                  }}>
+                    {servicio.descripcion}
+                  </p>
+
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 'var(--spa-spacing-md)',
+                  }}>
+                    <span style={{
+                      color: 'var(--spa-text-light)',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}>
+                      ⏱️ {servicio.duracion}
+                    </span>
+                    <span style={{
+                      color: 'var(--spa-primary)',
+                      fontWeight: '700',
+                      fontSize: '1.1rem',
+                    }}>
+                      ${servicio.precio.toLocaleString('es-CO')}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleSelectService(servicio)}
+                    style={{
+                      width: '100%',
+                      background: 'var(--spa-gradient-primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 'var(--spa-border-radius-small)',
+                      padding: 'var(--spa-spacing-sm)',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontFamily: 'Montserrat, sans-serif',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = 'var(--spa-shadow-medium)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Seleccionar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

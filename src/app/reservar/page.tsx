@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo, useCallback, memo } from "react";
 import { useSearchParams } from "next/navigation";
 import Calendario from "../components/Calendario";
 
@@ -19,8 +19,8 @@ const TRATAMIENTOS = {
   ],
   otros: [
     // Depilaciones Faciales
-    { id: 'depilacion-cejas', nombre: 'Depilación de Cejas', precio: 25000, duracion: 30, descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.' },
-    { id: 'depilacion-bigote', nombre: 'Depilación de Bigote', precio: 20000, duracion: 20, descripcion: 'Depilación de vello facial superior con cera.' },
+    { id: 'depilacion-cejas', nombre: 'Depilación de Cejas', precio: 15000, duracion: 30, descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.' },
+    { id: 'depilacion-bigote', nombre: 'Depilación de Bigote', precio: 8000, duracion: 20, descripcion: 'Depilación de vello facial superior con cera.' },
     { id: 'depilacion-barbilla', nombre: 'Depilación de Barbilla', precio: 22000, duracion: 25, descripcion: 'Depilación de vello en la zona de la barbilla.' },
     { id: 'depilacion-facial-completa', nombre: 'Depilación Facial Completa', precio: 45000, duracion: 45, descripcion: 'Depilación completa del rostro incluyendo cejas, bigote, barbilla y patillas.' },
     
@@ -58,6 +58,52 @@ const TRATAMIENTOS = {
     { id: 'depilacion-menton', nombre: 'DEPILACIÓN CON CERA - MENTÓN', precio: 8000, duracion: 10, descripcion: 'Depilación con cera para el área del mentón, dejando la piel suave y definida' },
     { id: 'depilacion-rostro', nombre: 'DEPILACIÓN CON CERA - ROSTRO', precio: 25000, duracion: 30, descripcion: 'Depilación completa del rostro con cera, eliminando todo el vello facial no deseado' }
   ]
+};
+
+// Mapa ultra-optimizado para búsqueda instantánea
+const TRATAMIENTOS_MAP = new Map();
+const TRATAMIENTOS_BY_ID = new Map();
+
+// Pre-procesar todos los datos una sola vez
+Object.entries(TRATAMIENTOS).forEach(([categoria, tratamientos]) => {
+  tratamientos.forEach(tratamiento => {
+    const nombreLower = tratamiento.nombre.toLowerCase();
+    const tratamientoConCategoria = { ...tratamiento, categoria };
+    
+    // Mapa por ID para acceso O(1)
+    TRATAMIENTOS_BY_ID.set(tratamiento.id, tratamientoConCategoria);
+    
+    // Mapa por nombre completo
+    TRATAMIENTOS_MAP.set(nombreLower, tratamientoConCategoria);
+    
+    // Solo palabras clave más importantes para reducir memoria
+    const palabras = nombreLower.split(' ').filter(palabra => palabra.length > 5);
+    palabras.forEach(palabra => {
+      if (!TRATAMIENTOS_MAP.has(palabra)) {
+        TRATAMIENTOS_MAP.set(palabra, tratamientoConCategoria);
+      }
+    });
+  });
+});
+
+// Función de búsqueda ultra-optimizada
+const buscarTratamientoOptimizado = (query: string) => {
+  if (!query) return null;
+  
+  const queryLower = query.toLowerCase();
+  
+  // Búsqueda directa por nombre completo (más común)
+  let resultado = TRATAMIENTOS_MAP.get(queryLower);
+  if (resultado) return resultado;
+  
+  // Búsqueda por palabras clave (solo las más importantes)
+  const palabras = queryLower.split(' ').filter(palabra => palabra.length > 5);
+  for (const palabra of palabras) {
+    resultado = TRATAMIENTOS_MAP.get(palabra);
+    if (resultado) return resultado;
+  }
+  
+  return null;
 };
 
 // Reglas de negocio: L-V 7-12 y 14-18; Sábados 7-14; Domingos/Feriados no se atiende (bloqueados en calendario)
@@ -182,7 +228,7 @@ async function fetchHorariosOcupados(fecha: string, categoria: string): Promise<
   return [];
 }
 
-function ReservarContent() {
+const ReservarContent = memo(function ReservarContent() {
   const params = useSearchParams();
   const seleccionQuery = params.get("seleccion") || "";
 
@@ -203,35 +249,31 @@ function ReservarContent() {
   const [showHorarios, setShowHorarios] = useState(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("corporales");
   const [tratamientoCargado, setTratamientoCargado] = useState(false);
+  const [loadingTratamiento, setLoadingTratamiento] = useState(!!seleccionQuery);
   const [horariosOcupados, setHorariosOcupados] = useState<string[]>([]);
   const [loadingHorarios, setLoadingHorarios] = useState(false);
-  
 
-  
-
-
-  useEffect(() => {
-    if (seleccionQuery) {
-      // Buscar el tratamiento en la selección
-      const tratamientoEncontrado = Object.values(TRATAMIENTOS).flat().find(t => 
-        seleccionQuery.toLowerCase().includes(t.nombre.toLowerCase())
-      );
-      if (tratamientoEncontrado) {
-        setForm(prev => ({ ...prev, tratamiento: tratamientoEncontrado.id }));
-        
-        // Determinar la categoría basada en el tratamiento encontrado
-        let categoriaEncontrada = 'corporales';
-        for (const [categoria, tratamientos] of Object.entries(TRATAMIENTOS)) {
-          if (tratamientos.some(t => t.id === tratamientoEncontrado.id)) {
-            categoriaEncontrada = categoria;
-            break;
-          }
-        }
-        setCategoriaSeleccionada(categoriaEncontrada);
-        setTratamientoCargado(true);
-      }
-    }
+  // Búsqueda ultra-optimizada sin re-renders
+  const tratamientoEncontrado = useMemo(() => {
+    return buscarTratamientoOptimizado(seleccionQuery);
   }, [seleccionQuery]);
+  
+
+  
+
+
+  // Aplicar tratamiento encontrado inmediatamente
+  useEffect(() => {
+    if (tratamientoEncontrado) {
+      setForm(prev => ({ ...prev, tratamiento: tratamientoEncontrado.id }));
+      setCategoriaSeleccionada(tratamientoEncontrado.categoria);
+      setTratamientoCargado(true);
+      setLoadingTratamiento(false);
+    } else if (seleccionQuery) {
+      // Si hay query pero no se encuentra tratamiento, quitar loading
+      setLoadingTratamiento(false);
+    }
+  }, [tratamientoEncontrado, seleccionQuery]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     const { name, value } = e.target as HTMLInputElement;
@@ -475,7 +517,24 @@ function ReservarContent() {
               Reservar Tratamiento Spa
             </h1>
             
-            {seleccionQuery && tratamientoCargado && (
+            {loadingTratamiento && (
+              <div style={{
+                background: 'var(--spa-light)',
+                color: 'var(--spa-text-primary)',
+                padding: 'var(--spa-spacing-md)',
+                borderRadius: 'var(--spa-border-radius-small)',
+                marginBottom: 'var(--spa-spacing-lg)',
+                textAlign: 'center',
+                fontFamily: 'Montserrat, sans-serif',
+                fontSize: '0.9rem',
+                border: '1px solid var(--spa-accent)'
+              }}>
+                <div style={{ fontSize: '1.2rem', marginBottom: 'var(--spa-spacing-xs)' }}>⏳</div>
+                Cargando tratamiento seleccionado...
+              </div>
+            )}
+
+            {seleccionQuery && tratamientoCargado && !loadingTratamiento && (
               <div style={{
                 background: 'var(--spa-success)',
                 color: 'white',
@@ -554,7 +613,7 @@ function ReservarContent() {
                 </>
               )}
 
-              {tratamiento && (
+              {tratamiento && !loadingTratamiento && (
                 <div style={{ 
                   background: 'var(--spa-light)', 
                   padding: 'var(--spa-spacing-md)', 
@@ -1187,7 +1246,7 @@ function ReservarContent() {
       </section>
     </main>
   );
-}
+});
 
 export default function ReservarPage() {
   return (
