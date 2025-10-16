@@ -12,7 +12,7 @@ const serviciosDepilacion = [
     categoria: 'Facial',
     colorCategoria: '#8B5CF6',
     descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.',
-    duracion: '30 min',
+    duracion: '30 minutos',
     precio: 15000,
   },
   {
@@ -21,7 +21,7 @@ const serviciosDepilacion = [
     categoria: 'Facial',
     colorCategoria: '#8B5CF6',
     descripcion: 'Depilación de vello facial superior con cera.',
-    duracion: '20 min',
+    duracion: '20 minutos',
     precio: 8000,
   },
   {
@@ -30,7 +30,7 @@ const serviciosDepilacion = [
     categoria: 'Corporal',
     colorCategoria: '#10B981',
     descripcion: 'Depilación de axilas con cera para una piel suave y sin vello.',
-    duracion: '10 min',
+    duracion: '10 minutos',
     precio: 15000,
   },
   {
@@ -39,7 +39,7 @@ const serviciosDepilacion = [
     categoria: 'Corporal',
     colorCategoria: '#10B981',
     descripcion: 'Depilación completa de piernas con cera desde los muslos hasta los tobillos.',
-    duracion: '1 hora',
+    duracion: '60 minutos',
     precio: 55000,
   },
   {
@@ -48,7 +48,7 @@ const serviciosDepilacion = [
     categoria: 'Corporal',
     colorCategoria: '#10B981',
     descripcion: 'Depilación de piernas desde la rodilla hasta el tobillo con cera.',
-    duracion: '40 min',
+    duracion: '40 minutos',
     precio: 35000,
   },
   {
@@ -57,7 +57,7 @@ const serviciosDepilacion = [
     categoria: 'Corporal',
     colorCategoria: '#10B981',
     descripcion: 'Depilación de zona íntima con cera para una piel suave y sin vello.',
-    duracion: '20 min',
+    duracion: '20 minutos',
     precio: 35000,
   }
 ];
@@ -68,7 +68,7 @@ const masajesRelajantes = [
     id: 'masaje-relajante',
     nombre: 'Masaje Relajante',
     indicacion: 'INDICADO PARA ALIVIAR TENSIONES FÍSICAS Y EMOCIONALES',
-    duracion: '1 HORA',
+    duracion: '60 minutos',
     precio: 120000,
     descripcion: 'Masaje suave y relajante diseñado para reducir el estrés y promover la relajación profunda.',
     incluye: [
@@ -82,7 +82,7 @@ const masajesRelajantes = [
   {
     id: 'masaje-descontracturante',
     nombre: 'Masaje Descontracturante',
-    duracion: '1 HORA',
+    duracion: '60 minutos',
     precio: 120000,
     descripcion: 'Masaje profundo especializado para liberar tensiones y contracturas musculares.',
     incluye: [
@@ -100,7 +100,7 @@ const otrosServiciosEspecializados = [
     id: 'valoracion',
     nombre: 'Valoración',
     indicacion: 'FACIAL O CORPORAL',
-    duracion: '20 min',
+    duracion: '20 minutos',
     precio: 0,
     descripcion: 'Consulta especializada para evaluar tus necesidades y determinar el mejor tratamiento facial o corporal según tu tipo de piel y objetivos.',
     precioEspecial: 'Sin costo',

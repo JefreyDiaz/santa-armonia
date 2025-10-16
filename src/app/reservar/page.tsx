@@ -128,7 +128,7 @@ function obtenerHorariosPorFecha(fecha: string): string[] {
   if (dia >= 1 && dia <= 5) {
     return [
       ...generarRango('07:00', '12:00'),
-      ...generarRango('14:00', '18:00')
+      ...generarRango('14:00', '19:00')
     ];
   }
   // Sábado

@@ -954,9 +954,6 @@ export default function AdminPage() {
                   <div style={{ marginBottom: '8px' }}>
                     <strong>📞 Teléfono:</strong> {reservaSeleccionada.telefono}
                   </div>
-                  <div>
-                    <strong>📧 Email:</strong> {reservaSeleccionada.email || 'No proporcionado'}
-                  </div>
                 </div>
               </div>
 

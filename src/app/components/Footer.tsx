@@ -138,12 +138,14 @@ export default function Footer() {
             opacity: isHeaderVisible ? 1 : 0,
             transform: isHeaderVisible ? 'translateY(0)' : 'translateY(30px)',
             transition: 'all 0.8s ease-out',
+            width: '100%'
           }}
         >
           {/* Logo */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
+            marginLeft: '0',
             animation: isHeaderVisible ? 'slideInFromLeft 0.8s ease-out' : 'none',
           }}>
             <Image
@@ -164,7 +166,8 @@ export default function Footer() {
           {/* Redes Sociales */}
           <div style={{
             display: 'flex',
-            gap: 'var(--spa-spacing-md)',
+            alignItems: 'center',
+            marginRight: '0',
             animation: isHeaderVisible ? 'slideInFromRight 0.8s ease-out' : 'none',
           }}>
             <a href="https://www.instagram.com/santaarmonia/" target="_blank" rel="noopener noreferrer" style={{
@@ -178,7 +181,8 @@ export default function Footer() {
               color: 'white',
               textDecoration: 'none',
               transition: 'all 0.3s ease',
-              boxShadow: 'var(--spa-shadow-soft)'
+              boxShadow: 'var(--spa-shadow-soft)',
+              marginRight: '2px'
             }} onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.1)';
               e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
@@ -201,7 +205,8 @@ export default function Footer() {
               color: 'white',
               textDecoration: 'none',
               transition: 'all 0.3s ease',
-              boxShadow: 'var(--spa-shadow-soft)'
+              boxShadow: 'var(--spa-shadow-soft)',
+              marginRight: '2px'
             }} onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.1)';
               e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
