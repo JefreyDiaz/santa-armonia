@@ -72,7 +72,7 @@ const faciales = [
       'Seguimiento post-tratamiento',
       'Valoración según necesidades'
     ],
-    precioEspecial: 'Según valoración'
+    precioEspecial: '$ Según valoración'
   },
   {
     id: 'rejuvenecimiento-facial-3d',
@@ -93,7 +93,7 @@ const faciales = [
       'Hilos tensores',
       'Ácido hialurónico reticulado (relleno)'
     ],
-    precioEspecial: 'Según valoración'
+    precioEspecial: '$ Según valoración'
   },
   {
     id: 'tratamiento-despigmentante',

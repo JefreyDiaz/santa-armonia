@@ -11,35 +11,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/services/faciales/page": [
+    "/services/corporales/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/services/faciales/page.js"
+      "static/chunks/app/services/corporales/page.js"
     ],
     "/reservar/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/reservar/page.js"
     ],
-    "/api/feriados/route": [
+    "/services/faciales/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/feriados/route.js"
-    ],
-    "/api/horarios/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/horarios/route.js"
+      "static/chunks/app/services/faciales/page.js"
     ],
     "/services/otros/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/services/otros/page.js"
-    ],
-    "/services/corporales/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/services/corporales/page.js"
     ],
     "/admin/page": [
       "static/chunks/webpack.js",
@@ -51,6 +41,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/verify/route.js"
     ],
+    "/api/reservas/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/reservas/route.js"
+    ],
     "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -60,16 +55,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/login/route.js"
-    ],
-    "/api/reservas/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/reservas/route.js"
-    ],
-    "/api/reservar/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/reservar/route.js"
     ]
   }
 }

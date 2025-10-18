@@ -54,23 +54,50 @@ export default function Banner() {
     const video = videoRef.current;
     if (video) {
       const handleLoadedData = () => {
+        console.log('Video cargado correctamente');
         setIsVideoLoaded(true);
       };
       
-      const handleError = () => {
-        console.warn('Error cargando video, usando imagen de fallback');
+      const handleCanPlay = () => {
+        console.log('Video puede reproducirse');
+        setIsVideoLoaded(true);
+      };
+      
+      const handleError = (e) => {
+        console.warn('Error cargando video:', e);
         setIsVideoLoaded(false);
       };
 
+      const handleLoadStart = () => {
+        console.log('Iniciando carga del video');
+      };
+
+      // Agregar múltiples eventos para asegurar la detección
       video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('canplay', handleCanPlay);
       video.addEventListener('error', handleError);
+      video.addEventListener('loadstart', handleLoadStart);
+      
+      // Forzar la carga del video
+      video.load();
+      
+      // Timeout de fallback para mostrar el video después de 3 segundos
+      const fallbackTimeout = setTimeout(() => {
+        if (!isVideoLoaded) {
+          console.log('Timeout: Forzando mostrar video');
+          setIsVideoLoaded(true);
+        }
+      }, 3000);
       
       return () => {
         video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('error', handleError);
+        video.removeEventListener('loadstart', handleLoadStart);
+        clearTimeout(fallbackTimeout);
       };
     }
-  }, []);
+  }, [isVideoLoaded]);
 
   return (
     <section
@@ -204,7 +231,7 @@ export default function Banner() {
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           style={{
             width: '100%',
             height: '100%',
@@ -212,6 +239,10 @@ export default function Banner() {
             objectPosition: 'center',
             opacity: isVideoLoaded ? 1 : 0,
             transition: 'opacity 1s ease-in-out',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1
           }}
         >
           <source src="/videos/hero-1.mp4" type="video/mp4" />

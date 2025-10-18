@@ -103,7 +103,7 @@ const otrosServiciosEspecializados = [
     duracion: '20 minutos',
     precio: 0,
     descripcion: 'Consulta especializada para evaluar tus necesidades y determinar el mejor tratamiento facial o corporal según tu tipo de piel y objetivos.',
-    precioEspecial: 'Sin costo',
+    precioEspecial: '$ Sin costo',
     imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0007.jpg'
   },
   {
@@ -111,21 +111,21 @@ const otrosServiciosEspecializados = [
     nombre: 'Cauterización de Verrugas',
     indicacion: 'SEGÚN VALORACIÓN MÉDICA',
     descripcion: 'Tratamiento especializado para la eliminación segura de verrugas y lunares mediante técnicas de cauterización.',
-    precio: 'Valor: Según valoración',
+    precio: '$ Según valoración',
     imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0007.jpg'
   },
   {
     id: 'lipo-papada',
     nombre: 'Lipo Papada',
     descripcion: 'Tratamiento de liposucción de papada a través de quemadores de grasa especializados.',
-    precio: 'Valor: Según valoración',
+    precio: '$ Según valoración',
     imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0009.jpg'
   },
   {
     id: 'lispoflas',
     nombre: 'Lispoflas',
     descripcion: 'Tratamiento especializado para la reducción de grasa localizada mediante técnicas avanzadas.',
-    precio: 'Valor: Según valoración',
+    precio: '$ Según valoración',
     imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0009.jpg'
   }
 ];
@@ -144,7 +144,7 @@ const sueroTerapia = {
     'Vitalidad',
     'Entre otros'
   ],
-  precio: 'Valor: De acuerdo al suero',
+  precio: '$ De acuerdo al suero',
   imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0010.jpg'
 };
 
@@ -303,7 +303,7 @@ export default function OtrosServiciosPage() {
                 fontWeight: '700',
                 fontSize: '1.1rem',
               }}>
-                Según Área
+                $ Según Área
               </span>
             </div>
 

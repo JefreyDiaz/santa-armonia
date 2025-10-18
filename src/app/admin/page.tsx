@@ -346,144 +346,54 @@ export default function AdminPage() {
               </p>
             </div>
             {user && (
-              <div 
-                data-user-menu
-                style={{
-                  position: 'relative',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  flexShrink: 0
-                }}
-              >
+              <div className="user-menu-wrapper">
                 <div 
-                  onClick={toggleMenuUsuario}
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    borderRadius: '50%',
-                    width: '50px',
-                    height: '50px',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    ':hover': {
-                      background: 'rgba(255,255,255,0.3)',
-                      transform: 'scale(1.05)'
-                    }
-                  }}
+                  data-user-menu
+                  className="user-menu-container"
                 >
-                  👤
-                </div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  fontWeight: '500',
-                  fontFamily: 'Montserrat, sans-serif',
-                  textAlign: 'center',
-                  color: 'white'
-                }}>
-                  {user.username}
-                </div>
-
-                {/* Menú desplegable */}
-                {menuUsuarioAbierto && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '70px',
-                    right: '0',
-                    background: 'white',
-                    borderRadius: 'var(--spa-border-radius)',
-                    boxShadow: 'var(--spa-shadow-large)',
-                    border: '1px solid var(--spa-border-color)',
-                    minWidth: '200px',
-                    zIndex: 1000,
-                    overflow: 'hidden',
-                    transform: 'translateX(0)'
-                  }}>
-                    <div style={{
-                      padding: '8px 0'
-                    }}>
-                      <button
-                        onClick={() => {
-                          router.push('/admin/recordatorios');
-                          cerrarMenuUsuario();
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          background: 'transparent',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          color: 'var(--spa-text-primary)',
-                          fontFamily: 'Montserrat, sans-serif',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--spa-light)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                      >
-                        📱 Recordatorios
-                      </button>
-                      <button
-                        onClick={deshabilitarFecha}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          background: 'transparent',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          color: 'var(--spa-text-primary)',
-                          fontFamily: 'Montserrat, sans-serif',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--spa-light)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                      >
-                        🚫 Deshabilitar Fecha
-                      </button>
-                      <div style={{
-                        height: '1px',
-                        background: 'var(--spa-border-color)',
-                        margin: '4px 0'
-                      }}></div>
-                      <button
-                        onClick={handleLogout}
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          background: 'transparent',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          color: 'var(--spa-error)',
-                          fontFamily: 'Montserrat, sans-serif',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                      >
-                        🚪 Cerrar Sesión
-                      </button>
+                  {/* Contenedor del icono y nombre */}
+                  <div className="user-info-section">
+                    <div 
+                      onClick={toggleMenuUsuario}
+                      className="user-avatar"
+                    >
+                      👤
+                    </div>
+                    <div className="username-display">
+                      {user.username}
                     </div>
                   </div>
-                )}
+
+                  {/* Menú desplegable */}
+                  {menuUsuarioAbierto && (
+                    <div className="user-dropdown-menu">
+                      <div className="dropdown-content">
+                        <button
+                          onClick={() => {
+                            router.push('/admin/recordatorios');
+                            cerrarMenuUsuario();
+                          }}
+                          className="dropdown-item"
+                        >
+                          📱 Recordatorios
+                        </button>
+                        <button
+                          onClick={deshabilitarFecha}
+                          className="dropdown-item"
+                        >
+                          🚫 Deshabilitar Fecha
+                        </button>
+                        <div className="dropdown-divider"></div>
+                        <button
+                          onClick={handleLogout}
+                          className="dropdown-item logout-item"
+                        >
+                          🚪 Cerrar Sesión
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1143,8 +1053,110 @@ export default function AdminPage() {
       )}
       </div>
 
-      {/* Estilos para móvil */}
+      {/* Estilos para el menú de usuario */}
       <style jsx>{`
+        /* Estilos base del menú de usuario */
+        .user-menu-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        .user-menu-container {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        
+        .user-info-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .user-avatar {
+          background: rgba(255,255,255,0.2);
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          border: 1px solid rgba(255,255,255,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+          background: rgba(255,255,255,0.3);
+          transform: scale(1.05);
+        }
+        
+        .username-display {
+          font-size: 12px;
+          font-weight: 500;
+          font-family: 'Montserrat', sans-serif;
+          text-align: center;
+          color: white;
+          width: 100%;
+        }
+        
+        .user-dropdown-menu {
+          position: absolute;
+          top: 70px;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+          border: 1px solid #e0e0e0;
+          min-width: 200px;
+          z-index: 1000;
+          overflow: hidden;
+        }
+        
+        .dropdown-content {
+          padding: 8px 0;
+        }
+        
+        .dropdown-item {
+          width: 100%;
+          padding: 12px 16px;
+          border: none;
+          background: transparent;
+          text-align: left;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+          font-family: 'Montserrat', sans-serif;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+          background: #f5f5f5;
+        }
+        
+        .logout-item {
+          color: #e74c3c;
+        }
+        
+        .logout-item:hover {
+          background: #fef2f2;
+        }
+        
+        .dropdown-divider {
+          height: 1px;
+          background: #e0e0e0;
+          margin: 4px 0;
+        }
+        
+        /* Estilos para móvil */
         @media (max-width: 768px) {
           .admin-header h1 {
             font-size: 20px !important;
@@ -1180,7 +1192,7 @@ export default function AdminPage() {
             display: block !important;
           }
           
-          /* Centrar componente de usuario en móvil */
+          /* Layout del header en móvil */
           .admin-header {
             flex-direction: column !important;
             align-items: center !important;
@@ -1204,28 +1216,72 @@ export default function AdminPage() {
             text-align: center !important;
           }
           
-          [data-user-menu] {
-            flex-shrink: 0 !important;
-            margin-top: 0 !important;
+          /* Centrado perfecto del menú de usuario en móvil */
+          .user-menu-wrapper {
             order: 2 !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+          }
+          
+          .user-menu-container {
             position: relative !important;
-            align-self: center !important;
-            transform: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            width: auto !important;
+            margin: 0 !important;
           }
           
-          /* Hacer que el nombre de usuario sea estático */
-          [data-user-menu] > div:nth-child(2) {
-            transform: none !important;
-            position: static !important;
+          .user-info-section {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 8px !important;
+            width: 100% !important;
           }
           
-          /* Ajustar menú desplegable en móvil - centrado */
-          [data-user-menu] > div:last-child {
+          .user-avatar {
+            margin: 0 auto !important;
+          }
+          
+          .username-display {
+            text-align: center !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+          }
+          
+          /* Menú desplegable centrado en móvil */
+          .user-dropdown-menu {
             left: 50% !important;
             right: auto !important;
             transform: translateX(-50%) !important;
             min-width: 200px !important;
             max-width: calc(100vw - 40px) !important;
+          }
+        }
+        
+        /* Estilos para desktop */
+        @media (min-width: 769px) {
+          .admin-table-desktop {
+            display: block !important;
+          }
+          
+          .admin-table-mobile {
+            display: none !important;
+          }
+          
+          .user-menu-wrapper {
+            order: 2 !important;
+          }
+          
+          .user-dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
           }
         }
         

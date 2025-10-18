@@ -1,14 +1,11 @@
 {
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/auth/verify/route": "app/api/auth/verify/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/reservas/route": "app/api/reservas/route.js",
-  "/api/feriados/route": "app/api/feriados/route.js",
-  "/api/horarios/route": "app/api/horarios/route.js",
-  "/api/reservar/route": "app/api/reservar/route.js",
-  "/page": "app/page.js",
+  "/services/faciales/page": "app/services/faciales/page.js",
   "/services/otros/page": "app/services/otros/page.js",
-  "/services/corporales/page": "app/services/corporales/page.js",
   "/admin/page": "app/admin/page.js",
-  "/login/page": "app/login/page.js",
-  "/reservar/page": "app/reservar/page.js"
+  "/page": "app/page.js",
+  "/login/page": "app/login/page.js"
 }
