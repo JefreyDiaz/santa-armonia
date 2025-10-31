@@ -11,50 +11,35 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/services/corporales/page": [
+    "/services/faciales/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/services/corporales/page.js"
+      "static/chunks/app/services/faciales/page.js"
     ],
     "/reservar/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/reservar/page.js"
     ],
-    "/services/faciales/page": [
+    "/api/feriados/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/services/faciales/page.js"
+      "static/chunks/app/api/feriados/route.js"
     ],
-    "/services/otros/page": [
+    "/api/horarios/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/services/otros/page.js"
+      "static/chunks/app/api/horarios/route.js"
     ],
-    "/admin/page": [
+    "/api/reservar/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
-    ],
-    "/api/auth/verify/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/verify/route.js"
+      "static/chunks/app/api/reservar/route.js"
     ],
     "/api/reservas/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/reservas/route.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/api/auth/login/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/login/route.js"
     ]
   }
 }

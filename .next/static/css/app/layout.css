@@ -285,9 +285,6 @@ html, body {
   .relative {
     position: relative;
   }
-  .static {
-    position: static;
-  }
   .block {
     display: block;
   }
