@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // Deshabilitar prerendering estático
   output: 'standalone',
   // Configuración para paquetes externos del servidor
-  serverExternalPackages: ['sqlite3'],
+  serverExternalPackages: ['pg'],
 };
 
 export default nextConfig;
