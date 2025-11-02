@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { crearReserva, verificarDisponibilidad } from '@/lib/database';
+import { crearReserva, verificarDisponibilidad, initDatabase } from '@/lib/database';
 import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    console.log('Datos recibidos:', body);
+    // Inicializar la base de datos (crea las tablas si no existen)
+    await initDatabase();
     
-    const { nombre, telefono, fecha, horario, tratamiento, notas } = body;
+    const body = await request.json();
+    
+    const { nombre, telefono, fecha, horario, tratamiento, tratamientoPrecio, tratamientoDuracion, tratamientoCategoria, notas } = body;
 
     // Validar campos requeridos
-    if (!nombre || !telefono || !fecha || !horario || !tratamiento) {
-      console.log('Campos faltantes:', { nombre, telefono, fecha, horario, tratamiento });
+    if (!nombre || !telefono || !fecha || !horario || !tratamiento || tratamientoPrecio === undefined || !tratamientoDuracion || !tratamientoCategoria) {
       return NextResponse.json(
         { error: 'Todos los campos son requeridos' },
         { status: 400 }
       );
     }
-
-    console.log('Verificando disponibilidad para:', fecha, horario);
     
     // Verificar disponibilidad en tiempo real
-    const disponible = await verificarDisponibilidad(fecha, horario, tratamiento);
-    console.log('Disponibilidad:', disponible);
+    const disponible = await verificarDisponibilidad(fecha, horario, tratamientoCategoria);
     
     if (!disponible) {
       return NextResponse.json(
@@ -30,8 +28,6 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
-
-    console.log('Creando reserva...');
     
     // Crear reserva en la base de datos
     const reserva = await crearReserva({
@@ -39,6 +35,9 @@ export async function POST(request: NextRequest) {
       telefono,
       email: '', // Email vacío ya que no se requiere
       tratamiento,
+      tratamientoPrecio,
+      tratamientoDuracion,
+      tratamientoCategoria,
       fecha,
       horario,
       notas
@@ -80,15 +79,6 @@ export async function POST(request: NextRequest) {
         }
       }
     }
-
-    // Por ahora no enviamos emails
-    console.log('Reserva creada exitosamente:', {
-      id: reserva.id,
-      cliente: nombre,
-      tratamiento,
-      fecha,
-      horario
-    });
 
     return NextResponse.json({
       success: true,

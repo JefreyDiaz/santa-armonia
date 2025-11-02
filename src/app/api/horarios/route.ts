@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initDatabase } from '@/lib/database';
+import { Pool } from 'pg';
+
+// Helper para obtener el pool
+function getPool(): Pool {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL no está definida en las variables de entorno');
+  }
+  return new Pool({
+    connectionString,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  });
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const fecha = searchParams.get('fecha');
-    const categoria = (searchParams.get('categoria') || '').toLowerCase(); // 'faciales' | 'masajes'
+    const fecha = request.nextUrl?.searchParams.get('fecha') || null;
+    const categoria = (request.nextUrl?.searchParams.get('categoria') || '').toLowerCase();
 
     if (!fecha) {
       return NextResponse.json(
@@ -14,23 +25,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener todas las reservas de la fecha, con su categoria
-    const db = await initDatabase();
-    const rows: Array<{ horario: string; categoria: string }> = await db.all(
-      `SELECT r.horario, t.categoria
-       FROM reservas r
-       JOIN tratamientos t ON r.tratamiento_id = t.id
-       WHERE r.fecha = ? AND r.estado = 'confirmada'`,
-      [fecha]
-    );
+    const pool = getPool();
+    
+    // Verificar si la tabla reservas existe, si no, retornar vacío
+    let result;
+    try {
+      result = await pool.query(
+        `SELECT horario, tratamiento_categoria as categoria
+         FROM reservas
+         WHERE fecha = $1 AND estado = 'confirmada'`,
+        [fecha]
+      );
+    } catch (tableError: any) {
+      // Si la tabla no existe, retornar array vacío (primera vez que se usa)
+      result = { rows: [] };
+    }
+    const rows: Array<{ horario: string; categoria: string }> = result.rows;
 
     // Agrupar conteos por horario
-    const byHour: Record<string, { faciales: number; masajes: number; total: number }> = {};
+    const byHour: Record<string, { faciales: number; corporales: number; otros: number; total: number }> = {};
     for (const r of rows) {
       const key = r.horario;
-      if (!byHour[key]) byHour[key] = { faciales: 0, masajes: 0, total: 0 };
+      if (!byHour[key]) byHour[key] = { faciales: 0, corporales: 0, otros: 0, total: 0 };
       if (r.categoria === 'faciales') byHour[key].faciales += 1;
-      if (r.categoria === 'masajes') byHour[key].masajes += 1;
+      if (r.categoria === 'corporales') byHour[key].corporales += 1;
+      if (r.categoria === 'otros') byHour[key].otros += 1;
       byHour[key].total += 1;
     }
 
@@ -51,8 +70,8 @@ export async function GET(request: NextRequest) {
         // Tarde: capacidad 2 total, no 2 faciales
         if (categoria === 'faciales') {
           ocupado = counts.faciales >= 1 || counts.total >= 2;
-        } else if (categoria === 'masajes') {
-          ocupado = counts.masajes >= 1 || counts.total >= 2;
+        } else if (categoria === 'corporales' || categoria === 'otros') {
+          ocupado = counts.total >= 2;
         } else {
           // Si no se envía categoria, consideramos ocupado cuando total >=2
           ocupado = counts.total >= 2;
@@ -64,6 +83,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // NO cerrar el pool en serverless - se reutiliza entre peticiones
     return NextResponse.json({ fecha, horariosOcupados, totalOcupados: horariosOcupados.length });
 
   } catch (error) {

@@ -300,6 +300,9 @@ html, body {
   .inline-block {
     display: inline-block;
   }
+  .inline-flex {
+    display: inline-flex;
+  }
   .flex-shrink {
     flex-shrink: 1;
   }
@@ -338,7 +341,7 @@ html, body {
   }
 }
 :root {
-  --background: #ffffff;
+  --background: #E8F4F4;
   --foreground: #171717;
   --spa-primary: #5D9C9C;
   --spa-secondary: #8B6B8B;

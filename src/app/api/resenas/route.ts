@@ -44,8 +44,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const servicio = searchParams.get('servicio');
+    const servicio = req.nextUrl.searchParams.get('servicio');
     
     console.log('Obteniendo reseñas, servicio:', servicio);
     

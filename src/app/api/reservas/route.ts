@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getReservas, initDatabase } from '@/lib/database';
+import { getReservas, updateReservaEstado } from '@/lib/database';
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,27 +27,19 @@ export async function PUT(req: NextRequest) {
     const { id, estado } = await req.json();
     console.log('Actualizando estado de reserva:', { id, estado });
     
-    const db = await initDatabase();
-    
-    const result = await db.run(`
-      UPDATE reservas 
-      SET estado = ? 
-      WHERE id = ?
-    `, [estado, id]);
-    
-    console.log('Resultado de actualización:', result);
-    
-    if (result.changes === 0) {
+    // Validar estado
+    if (!['confirmada', 'cancelada', 'reprogramar', 'pendiente'].includes(estado)) {
       return NextResponse.json({ 
         success: false,
-        error: 'Reserva no encontrada' 
-      }, { status: 404 });
+        error: 'Estado inválido' 
+      }, { status: 400 });
     }
+    
+    await updateReservaEstado(id, estado);
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Estado de reserva actualizado',
-      changes: result.changes
+      message: 'Estado de reserva actualizado'
     });
     
   } catch (err: any) {

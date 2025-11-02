@@ -312,7 +312,13 @@ const ReservarContent = memo(function ReservarContent() {
   }
 
   function getTratamientoSeleccionado() {
-    return Object.values(TRATAMIENTOS).flat().find(t => t.id === form.tratamiento);
+    for (const [categoria, tratamientos] of Object.entries(TRATAMIENTOS)) {
+      const encontrado = tratamientos.find(t => t.id === form.tratamiento);
+      if (encontrado) {
+        return { ...encontrado, categoria };
+      }
+    }
+    return null;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -355,7 +361,10 @@ const ReservarContent = memo(function ReservarContent() {
         telefono: telefonoE164,
         fecha: form.fecha,
         horario: form.horario,
-        tratamiento: tratamiento.nombre, // Enviar el nombre del tratamiento
+        tratamiento: tratamiento.nombre,
+        tratamientoPrecio: tratamiento.precio,
+        tratamientoDuracion: tratamiento.duracion,
+        tratamientoCategoria: tratamiento.categoria,
         notas: form.notas || ""
       };
 

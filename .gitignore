@@ -1,1 +1,10 @@
-node_modules/ 
+node_modules/
+.next/
+.env
+.env.local
+.env*.local
+*.db
+*.sqlite
+*.sqlite3
+database.sqlite
+spa_reservas.db 

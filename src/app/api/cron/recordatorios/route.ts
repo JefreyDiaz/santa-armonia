@@ -187,9 +187,8 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
 // Endpoint GET para ejecutar recordatorios manualmente
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const horas = Number(searchParams.get('horas') || '2');
-    const fecha = searchParams.get('fecha'); // Formato: YYYY-MM-DD
+    const horas = Number(req.nextUrl.searchParams.get('horas') || '2');
+    const fecha = req.nextUrl.searchParams.get('fecha'); // Formato: YYYY-MM-DD
     
     // Verificar que sea una hora válida (1-24 horas)
     if (horas < 1 || horas > 24) {

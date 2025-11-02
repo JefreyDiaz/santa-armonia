@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initDatabase } from '@/lib/database';
+import { Pool } from 'pg';
+
+function getPool(): Pool {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL no está definida');
+  }
+  return new Pool({
+    connectionString,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  });
+}
 
 export async function POST(request: NextRequest) {
+  const pool = getPool();
   try {
     const body = await request.json();
     console.log('Datos recibidos en test-db:', body);
-    
-    const db = await initDatabase();
     
     // Probar inserción directa
     const testCliente = {
@@ -17,17 +27,19 @@ export async function POST(request: NextRequest) {
     
     console.log('Intentando insertar cliente:', testCliente);
     
-    const result = await db.run(`
+    const result = await pool.query(`
       INSERT INTO clientes (nombre, telefono, email)
-      VALUES (?, ?, ?)
+      VALUES ($1, $2, $3)
+      RETURNING id
     `, [testCliente.nombre, testCliente.telefono, testCliente.email]);
     
-    console.log('Cliente insertado con ID:', result.lastID);
+    console.log('Cliente insertado con ID:', result.rows[0].id);
     
+    // NO cerrar el pool en serverless
     return NextResponse.json({
       success: true,
       message: 'Cliente insertado correctamente',
-      clienteId: result.lastID,
+      clienteId: result.rows[0].id,
       datosInsertados: testCliente
     });
     
@@ -42,13 +54,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const pool = getPool();
   try {
     console.log('Verificando fechas en la base de datos...');
     
-    const db = await initDatabase();
-    
     // Obtener todas las reservas con sus fechas
-    const reservas = await db.all(`
+    const result = await pool.query(`
       SELECT 
         id,
         fecha,
@@ -60,12 +71,13 @@ export async function GET(request: NextRequest) {
       LIMIT 5
     `);
     
-    console.log('Reservas encontradas:', reservas);
+    console.log('Reservas encontradas:', result.rows);
     
+    // NO cerrar el pool en serverless
     return NextResponse.json({
       success: true,
       message: 'Fechas verificadas',
-      reservas: reservas,
+      reservas: result.rows,
       fechaActual: new Date().toISOString()
     });
     
@@ -80,25 +92,25 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const pool = getPool();
+  const client = await pool.connect();
   try {
     console.log('Creando reserva de prueba con fechas diferentes...');
     
-    const db = await initDatabase();
+    await client.query('BEGIN');
     
-    // Limpiar reservas de prueba anteriores
-    await db.run(`DELETE FROM reservas WHERE id > 0`);
-    await db.run(`DELETE FROM clientes WHERE id > 0`);
+    // Limpiar reservas de prueba anteriores (cuidado en producción!)
+    await client.query(`DELETE FROM reservas WHERE id > 0`);
+    await client.query(`DELETE FROM clientes WHERE id > 0`);
     
     // Crear cliente de prueba
-    const clienteResult = await db.run(`
+    const clienteResult = await client.query(`
       INSERT INTO clientes (nombre, telefono, email)
-      VALUES (?, ?, ?)
+      VALUES ($1, $2, $3)
+      RETURNING id
     `, ['Cliente Test Fechas', '3001234567', 'test@example.com']);
     
-    const clienteId = clienteResult.lastID;
-    
-    // Obtener un tratamiento
-    const tratamiento = await db.get(`SELECT id FROM tratamientos LIMIT 1`);
+    const clienteId = clienteResult.rows[0].id;
     
     // Crear reserva con fecha programada diferente a la actual
     const fechaProgramada = '2025-01-07'; // 7 de enero
@@ -107,31 +119,38 @@ export async function PUT(request: NextRequest) {
     console.log('Fecha programada:', fechaProgramada);
     console.log('Fecha actual:', fechaActual);
     
-    const reservaResult = await db.run(`
-      INSERT INTO reservas (cliente_id, tratamiento_id, fecha, horario, notas)
-      VALUES (?, ?, ?, ?, ?)
-    `, [clienteId, tratamiento.id, fechaProgramada, '10:00', 'Reserva de prueba']);
+    const reservaResult = await client.query(`
+      INSERT INTO reservas (cliente_id, tratamiento_nombre, tratamiento_precio, tratamiento_duracion, tratamiento_categoria, fecha, horario, notas)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id
+    `, [clienteId, 'Masaje Test', 100000, 60, 'corporales', fechaProgramada, '10:00', 'Reserva de prueba']);
     
-    console.log('Reserva creada con ID:', reservaResult.lastID);
+    console.log('Reserva creada con ID:', reservaResult.rows[0].id);
     
     // Verificar qué se guardó
-    const reservaGuardada = await db.get(`
+    const reservaGuardada = await client.query(`
       SELECT id, fecha, created_at, horario
       FROM reservas 
-      WHERE id = ?
-    `, [reservaResult.lastID]);
+      WHERE id = $1
+    `, [reservaResult.rows[0].id]);
     
-    console.log('Reserva guardada:', reservaGuardada);
+    console.log('Reserva guardada:', reservaGuardada.rows[0]);
+    
+    await client.query('COMMIT');
+    client.release();
+    // NO cerrar el pool en serverless
     
     return NextResponse.json({
       success: true,
       message: 'Reserva de prueba creada',
-      reserva: reservaGuardada,
+      reserva: reservaGuardada.rows[0],
       fechaProgramada,
       fechaActual
     });
     
   } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
     console.error('Error creando reserva de prueba:', error);
     return NextResponse.json({
       success: false,
@@ -139,4 +158,4 @@ export async function PUT(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Error desconocido'
     }, { status: 500 });
   }
-} 
+}

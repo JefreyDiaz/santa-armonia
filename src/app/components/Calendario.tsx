@@ -230,63 +230,89 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
   useEffect(() => {
     async function verificarDisponibilidadMes() {
       const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
-      const daysInMonth = getDaysInMonth(year, month);
-      const fechasSinDisponibilidadSet = new Set<string>();
-      const fechasConDisponibilidadSet = new Set<string>();
+      const month = currentMonth.getMonth() + 1; // API espera 1-12
       
-      // Limpiar estados anteriores
-      setFechasSinDisponibilidad(new Set());
-      setFechasConDisponibilidad(new Set());
-      
-      // Verificar cada día del mes en lotes de 5 para mejor rendimiento
-      const fechasAVerificar: string[] = [];
-      
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, month, day);
-        const dateStr = formatDate(date);
+      try {
+        // 1 SOLA petición para traer TODAS las reservas del mes
+        const response = await fetch(`/api/reservas-mes?year=${year}&month=${month}`, { cache: 'no-store' });
         
-        // Solo verificar fechas futuras que no sean domingos o feriados
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const isPast = date < today;
-        const isNoLaboral = isDomingo(date) || isFeriado(date);
-        
-        if (!isPast && !isNoLaboral) {
-          fechasAVerificar.push(dateStr);
+        if (!response.ok) {
+          return;
         }
-      }
-      
-      // Procesar en lotes de 5 fechas
-      const batchSize = 5;
-      for (let i = 0; i < fechasAVerificar.length; i += batchSize) {
-        const batch = fechasAVerificar.slice(i, i + batchSize);
         
-        // Procesar el lote en paralelo
-        const promises = batch.map(async (fecha) => {
-          const tieneDisponibilidad = await verificarDisponibilidadFecha(fecha);
-          return { fecha, tieneDisponibilidad };
-        });
+        const data = await response.json();
+        const reservas = data.reservas || [];
         
-        const results = await Promise.all(promises);
+        // Procesar localmente qué fechas están sin disponibilidad
+        const fechasSinDisponibilidadSet = new Set<string>();
+        const fechasConDisponibilidadSet = new Set<string>();
         
-        // Actualizar estados con los resultados del lote
-        results.forEach(({ fecha, tieneDisponibilidad }) => {
-          if (tieneDisponibilidad) {
-            fechasConDisponibilidadSet.add(fecha);
-          } else {
-            fechasSinDisponibilidadSet.add(fecha);
+        // Generar todos los horarios posibles
+        const generarRango = (inicio: string, fin: string) => {
+          const horarios = [];
+          const [hInicio, mInicio] = inicio.split(':').map(Number);
+          const [hFin, mFin] = fin.split(':').map(Number);
+          for (let h = hInicio; h <= hFin; h++) {
+            if (h === hFin && mInicio > mFin) break;
+            horarios.push(`${String(h).padStart(2, '0')}:00`);
           }
+          return horarios;
+        };
+        
+        // Agrupar reservas por fecha
+        const reservasPorFecha: Record<string, any[]> = {};
+        reservas.forEach((r: any) => {
+          if (!reservasPorFecha[r.fecha]) {
+            reservasPorFecha[r.fecha] = [];
+          }
+          reservasPorFecha[r.fecha].push(r);
         });
         
-        // Actualizar estados después de cada lote para mostrar progreso
-        setFechasSinDisponibilidad(new Set(fechasSinDisponibilidadSet));
-        setFechasConDisponibilidad(new Set(fechasConDisponibilidadSet));
-        
-        // Pequeña pausa entre lotes para no sobrecargar el servidor
-        if (i + batchSize < fechasAVerificar.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // Verificar cada día del mes
+        const daysInMonth = getDaysInMonth(year, month - 1);
+        for (let day = 1; day <= daysInMonth; day++) {
+          const date = new Date(year, month - 1, day);
+          const dateStr = formatDate(date);
+          const dia = date.getDay();
+          
+          // Solo verificar fechas futuras que no sean domingos o feriados
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const isPast = date < today;
+          const isNoLaboral = isDomingo(date) || isFeriado(date);
+          
+          if (isPast || isNoLaboral) continue;
+          
+          // Determinar horarios posibles según el día
+          let horariosPosibles: string[] = [];
+          if (dia >= 1 && dia <= 5) { // L-V
+            horariosPosibles = [
+              ...generarRango('07:00', '12:00'),
+              ...generarRango('14:00', '19:00')
+            ];
+          } else if (dia === 6) { // Sábado
+            horariosPosibles = generarRango('07:00', '15:00');
+          }
+          
+          // Contar horarios ocupados para esta fecha
+          const reservasDelDia = reservasPorFecha[dateStr] || [];
+          const horariosOcupados = reservasDelDia.map((r: any) => r.horario);
+          
+          // Si todos los horarios están ocupados, marcar como sin disponibilidad
+          const disponibles = horariosPosibles.filter(h => !horariosOcupados.includes(h));
+          
+          if (disponibles.length === 0) {
+            fechasSinDisponibilidadSet.add(dateStr);
+          } else {
+            fechasConDisponibilidadSet.add(dateStr);
+          }
         }
+        
+        setFechasSinDisponibilidad(fechasSinDisponibilidadSet);
+        setFechasConDisponibilidad(fechasConDisponibilidadSet);
+        
+      } catch (error) {
+        console.error('Error cargando disponibilidad:', error);
       }
     }
     

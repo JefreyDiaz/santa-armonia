@@ -10,11 +10,37 @@ export default function Footer() {
   const [isColumnsVisible, setIsColumnsVisible] = useState(false);
   const [isCopyrightVisible, setIsCopyrightVisible] = useState(false);
   
+  // Estados para el modal de certificaciones
+  const [showCertModal, setShowCertModal] = useState(false);
+  const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  
   // Referencias para Intersection Observer
   const footerRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const columnsRef = useRef<HTMLDivElement>(null);
   const copyrightRef = useRef<HTMLDivElement>(null);
+
+  // Lista de certificaciones
+  const certificaciones = [
+    "ACNÉ Y  SU TRATAMIENTO CON ÁCIDOS.pdf",
+    "Auxiliar en Enfermeria.pdf",
+    "Cosmetologia Estdica Integral.pdf",
+    "DERMAPEN.pdf",
+    "Drenaje Linfático.pdf",
+    "Experto en Acido Hiaturónico.pdf",
+    "LA NUEVA ERA DE LA REVITALIZACIÓN FACIAL TENS BOOSTER.pdf",
+    "Lipedema y Linfedema en Estéticа.pdf",
+    "MANEJO INTEGRAL DE P.E.F.E TECNOLOGIA INTELIGENTE MAS DLM (DRENAJE LINFATICO MANUAL).pdf",
+    "POSOPERATORIO Y MANEJO DE ÁCIDOS.pdf",
+    "Post - Operatorio Plus.pdf",
+    "Pre y Post Quirurgioo Faviaty Corporal.pdf",
+    "Rejuvenecimiento Del Tercio Facial Inferior.pdf",
+    "Rejuvenecimiento facial con me Ácido Ferulico .pdf",
+    "REJUVENECIMIENTO FACIAL EN 3D.pdf",
+    "RINOMODELACION Y LABIOS CON ACIDO HIALURONICO.pdf",
+    "Tour estético.pdf",
+    "Tratamiento Bio-Osmótico 5 drenajes en 1 Obesidad, Celulitis, Flacidez, Estrías.pdf"
+  ];
 
   // Intersection Observer para scroll reveal
   useEffect(() => {
@@ -44,8 +70,55 @@ export default function Footer() {
 
   return (
     <div style={{
-      padding: '0 var(--spa-spacing-lg)'
+      padding: '0 var(--spa-spacing-lg)',
+      background: 'linear-gradient(to bottom, #E8F4F4 0%, #D4E8E8 100%)',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Elementos decorativos - Bolitas flotantes */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '15%',
+          left: '8%',
+          width: '100px',
+          height: '100px',
+          background: 'var(--spa-gradient-primary)',
+          borderRadius: '50%',
+          opacity: isVisible ? 0.12 : 0,
+          animation: isVisible ? 'float 7s ease-in-out infinite' : 'none',
+          transition: 'opacity 1s ease-out',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: '45%',
+          right: '5%',
+          width: '80px',
+          height: '80px',
+          background: 'var(--spa-accent)',
+          borderRadius: '50%',
+          opacity: isVisible ? 0.15 : 0,
+          animation: isVisible ? 'float 9s ease-in-out infinite reverse' : 'none',
+          transition: 'opacity 1s ease-out 0.2s',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20%',
+          left: '12%',
+          width: '60px',
+          height: '60px',
+          background: 'var(--spa-primary)',
+          borderRadius: '50%',
+          opacity: isVisible ? 0.1 : 0,
+          animation: isVisible ? 'float 8s ease-in-out infinite' : 'none',
+          transition: 'opacity 1s ease-out 0.4s',
+        }}
+      />
+
       <footer 
         ref={footerRef}
         style={{
@@ -65,6 +138,11 @@ export default function Footer() {
         }}
       >
         <style jsx>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
           @keyframes fadeInUp {
             from {
               opacity: 0;
@@ -290,8 +368,8 @@ export default function Footer() {
                 fontSize: '14px',
                 lineHeight: '1.6'
               }}>
-                <div>📞 WhatsApp: 301-536-1106</div>
-                <div>📧 Email: info@santaarmonia.com</div>
+                <div>📞 WhatsApp: 315-727-4521</div>
+                <div>📧 Email: santaarmonia4@gmail.com</div>
                 <div>🕐 Atención: Lunes a Sábado</div>
                 <div>⏰ Horario: 8:00 AM - 6:00 PM</div>
               </div>
@@ -311,7 +389,7 @@ export default function Footer() {
                 fontSize: '14px',
                 lineHeight: '1.6'
               }}>
-                <div>📍 Calle Principal #123</div>
+                <div>📍 Cra 9B #57D - 27 La Carolita</div>
                 <div>🏢 Manizales - Caldas</div>
                 <div>🚗 Estacionamiento disponible</div>
                 <div>♿ Acceso para personas con movilidad reducida</div>
@@ -378,6 +456,37 @@ export default function Footer() {
                 <div>✅ Licencia comercial</div>
                 <div>✅ Terapeutas certificados</div>
                 <div>✅ Productos autorizados</div>
+                <div 
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowCertModal(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowCertModal(true);
+                    }
+                  }}
+                  style={{ 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    marginTop: '8px',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateX(5px)';
+                    e.currentTarget.style.color = 'var(--spa-light)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateX(0)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                >
+                  📜 Todas las certificaciones ↗
+                </div>
               </div>
             </div>
           </div>
@@ -414,7 +523,6 @@ export default function Footer() {
                 <div>💆‍♀️ Masajes terapéuticos</div>
                 <div>🧖‍♀️ Tratamientos faciales</div>
                 <div>💆‍♂️ Terapias corporales</div>
-                <div>🎁 Paquetes especiales</div>
               </div>
             </div>
 
@@ -432,16 +540,106 @@ export default function Footer() {
                 fontSize: '14px',
                 lineHeight: '1.6'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <img src="/images/davivienda.png" alt="Davivienda" style={{ width: '20px', height: '20px' }} />
-                  <span>4884-0445-0337</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <img 
+                      src="/images/medios-pago/davivienda.png" 
+                      alt="Davivienda" 
+                      style={{ 
+                        maxHeight: '24px', 
+                        maxWidth: '32px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </div>
+                  <span>3148663880</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <img src="/images/nequi.png" alt="Nequi" style={{ width: '20px', height: '20px' }} />
-                  <span>313-621-1447</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <img 
+                      src="/images/medios-pago/nequi.png" 
+                      alt="Nequi" 
+                      style={{ 
+                        maxHeight: '24px', 
+                        maxWidth: '32px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </div>
+                  <span>3157274521</span>
                 </div>
-                <div>💳 Efectivo</div>
-                <div>💳 Tarjetas débito/crédito</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <img 
+                      src="/images/medios-pago/Bancolombia.png" 
+                      alt="Bancolombia" 
+                      style={{ 
+                        maxHeight: '24px', 
+                        maxWidth: '32px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </div>
+                  <span>85925130279</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <img 
+                      src="/images/medios-pago/breb.png" 
+                      alt="Llave" 
+                      style={{ 
+                        maxHeight: '24px', 
+                        maxWidth: '32px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </div>
+                  <span>@sandra0211</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ 
+                    width: '32px', 
+                    height: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                  }}>
+                    <img 
+                      src="/images/medios-pago/efectivo.png" 
+                      alt="Efectivo" 
+                      style={{ 
+                        maxHeight: '24px', 
+                        maxWidth: '32px',
+                        objectFit: 'contain'
+                      }} 
+                    />
+                  </div>
+                  <span>Efectivo</span>
+                </div>
               </div>
             </div>
           </div>
@@ -463,8 +661,252 @@ export default function Footer() {
           }}
         >
           © 2025 | Todos los derechos reservados | Santa Armonía Facial & Corporal
-      </div>
-    </footer>
+        </div>
+
+        {/* Modal de Certificaciones */}
+        {showCertModal && (
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cert-modal-title"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 9999,
+              padding: '20px'
+            }}
+            onClick={() => {
+              setShowCertModal(false);
+              setSelectedPdf(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setShowCertModal(false);
+                setSelectedPdf(null);
+              }
+            }}
+          >
+            <div 
+              role="document"
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '15px',
+                width: '90%',
+                maxWidth: '1200px',
+                height: '90vh',
+                display: 'flex',
+                flexDirection: 'row',
+                overflow: 'hidden',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Panel izquierdo - Lista de certificaciones */}
+              <div style={{
+                width: selectedPdf ? '350px' : '100%',
+                borderRight: selectedPdf ? '1px solid #e0e0e0' : 'none',
+                overflowY: 'auto',
+                padding: '30px',
+                transition: 'width 0.3s ease'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '25px'
+                }}>
+                  <h2 
+                    id="cert-modal-title"
+                    style={{
+                      color: 'var(--spa-primary)',
+                      fontSize: '24px',
+                      fontWeight: 'bold',
+                      margin: 0,
+                      fontFamily: 'Montserrat, sans-serif'
+                    }}
+                  >
+                    📜 Certificaciones
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowCertModal(false);
+                      setSelectedPdf(null);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: '28px',
+                      cursor: 'pointer',
+                      color: '#666',
+                      transition: 'all 0.3s ease',
+                      padding: '5px 10px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#ff4444';
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#666';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div style={{
+                  color: '#666',
+                  marginBottom: '20px',
+                  fontSize: '14px',
+                  lineHeight: '1.5'
+                }}>
+                  {selectedPdf ? 
+                    'Haz clic en otro certificado para visualizarlo' : 
+                    'Selecciona un certificado de la lista para visualizarlo'
+                  }
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  {certificaciones.map((cert) => (
+                    <div
+                      key={cert}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setSelectedPdf(cert)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedPdf(cert);
+                        }
+                      }}
+                      style={{
+                        padding: '15px 20px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        backgroundColor: selectedPdf === cert ? 'var(--spa-primary)' : '#f5f5f5',
+                        color: selectedPdf === cert ? 'white' : '#333',
+                        transition: 'all 0.3s ease',
+                        border: selectedPdf === cert ? '2px solid var(--spa-primary)' : '2px solid transparent',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: selectedPdf === cert ? '600' : '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedPdf !== cert) {
+                          e.currentTarget.style.backgroundColor = '#e8f4f4';
+                          e.currentTarget.style.transform = 'translateX(5px)';
+                          e.currentTarget.style.borderColor = 'var(--spa-primary)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedPdf !== cert) {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                          e.currentTarget.style.transform = 'translateX(0)';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <span style={{ fontSize: '20px' }}>
+                        {selectedPdf === cert ? '📄' : '📋'}
+                      </span>
+                      <span style={{ flex: 1 }}>
+                        {cert.replace('.pdf', '')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Panel derecho - Visor de PDF */}
+              {selectedPdf && (
+                <div style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: '#f9f9f9'
+                }}>
+                  <div style={{
+                    padding: '20px 30px',
+                    borderBottom: '1px solid #e0e0e0',
+                    backgroundColor: 'white',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <h3 style={{
+                      margin: 0,
+                      color: '#333',
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      fontFamily: 'Montserrat, sans-serif',
+                      maxWidth: '70%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {selectedPdf.replace('.pdf', '')}
+                    </h3>
+                    <button
+                      onClick={() => setSelectedPdf(null)}
+                      style={{
+                        padding: '8px 20px',
+                        borderRadius: '6px',
+                        border: '2px solid var(--spa-primary)',
+                        backgroundColor: 'white',
+                        color: 'var(--spa-primary)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        fontFamily: 'Montserrat, sans-serif',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--spa-primary)';
+                        e.currentTarget.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.color = 'var(--spa-primary)';
+                      }}
+                    >
+                      ← Volver a la lista
+                    </button>
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <iframe
+                      src={`/docs/${selectedPdf}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        border: 'none'
+                      }}
+                      title={selectedPdf}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </footer>
     </div>
   );
 }

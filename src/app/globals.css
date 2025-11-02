@@ -56,8 +56,8 @@ html, body {
 
 /* ===== VARIABLES CSS - SPA SANTA ARMONÍA ===== */
 :root {
-  /* Fondo blanco */
-  --background: #ffffff;
+  /* Fondo pastel suave */
+  --background: #E8F4F4;
   --foreground: #171717;
   
   /* Colores principales del Spa - Basados en el logo oficial */

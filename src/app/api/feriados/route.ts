@@ -6,12 +6,12 @@ export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const year = searchParams.get('year');
+    const year = req.nextUrl?.searchParams.get('year');
     const list = await getFeriados(year ? Number(year) : undefined);
     return NextResponse.json({ ok: true, feriados: list });
-  } catch (e) {
-    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+  } catch (e: any) {
+    console.error('Error en /api/feriados:', e);
+    return NextResponse.json({ ok: false, error: e.message || String(e) }, { status: 500 });
   }
 }
 

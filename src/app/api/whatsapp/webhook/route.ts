@@ -5,10 +5,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const mode = url.searchParams.get('hub.mode');
-  const token = url.searchParams.get('hub.verify_token');
-  const challenge = url.searchParams.get('hub.challenge');
+  const mode = req.nextUrl.searchParams.get('hub.mode');
+  const token = req.nextUrl.searchParams.get('hub.verify_token');
+  const challenge = req.nextUrl.searchParams.get('hub.challenge');
 
   if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
     return new NextResponse(challenge || '', { status: 200 });

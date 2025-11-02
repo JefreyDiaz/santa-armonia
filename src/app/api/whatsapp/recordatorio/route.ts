@@ -23,8 +23,7 @@ function formatDateLocal(date: Date): string {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const horas = Number(searchParams.get('horas') || '2');
+    const horas = Number(req.nextUrl.searchParams.get('horas') || '2');
 
     const db = await initDatabase();
     const hoy = formatDateLocal(new Date());
