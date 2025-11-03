@@ -17,9 +17,6 @@ export const metadata: Metadata = {
   description: "Centro de estética integral. Tratamientos faciales y corporales. Agenda tu cita en Santa Armonía.",
   keywords: ["spa", "estética", "tratamientos faciales", "tratamientos corporales", "Santa Armonía"],
   authors: [{ name: "Santa Armonía" }],
-  icons: {
-    icon: '/images/icono_santa_armonia.png',
-  },
   openGraph: {
     title: "Santa Armonía - Facial & Corporal",
     description: "Centro de estética integral. Tratamientos faciales y corporales.",

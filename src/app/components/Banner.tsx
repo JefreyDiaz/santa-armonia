@@ -54,12 +54,10 @@ export default function Banner() {
     const video = videoRef.current;
     if (video) {
       const handleLoadedData = () => {
-        console.log('Video cargado correctamente');
         setIsVideoLoaded(true);
       };
       
       const handleCanPlay = () => {
-        console.log('Video puede reproducirse');
         setIsVideoLoaded(true);
       };
       
@@ -69,7 +67,7 @@ export default function Banner() {
       };
 
       const handleLoadStart = () => {
-        console.log('Iniciando carga del video');
+        // Video iniciando carga
       };
 
       // Agregar múltiples eventos para asegurar la detección
@@ -84,7 +82,6 @@ export default function Banner() {
       // Timeout de fallback para mostrar el video después de 3 segundos
       const fallbackTimeout = setTimeout(() => {
         if (!isVideoLoaded) {
-          console.log('Timeout: Forzando mostrar video');
           setIsVideoLoaded(true);
         }
       }, 3000);
