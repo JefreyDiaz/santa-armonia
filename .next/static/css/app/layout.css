@@ -300,9 +300,6 @@ html, body {
   .inline-block {
     display: inline-block;
   }
-  .inline-flex {
-    display: inline-flex;
-  }
   .flex-shrink {
     flex-shrink: 1;
   }
