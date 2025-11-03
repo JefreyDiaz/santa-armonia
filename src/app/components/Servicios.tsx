@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 
 const servicios = [
@@ -221,31 +222,21 @@ export default function Servicios() {
                 flex: '0 0 250px',
                 position: 'relative',
               }}>
-                <img 
+                <Image
                   src={servicio.img} 
-                  alt={servicio.alt} 
+                  alt={servicio.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 280px"
                   style={{ 
-                    width: '100%', 
-                    height: '100%', 
                     objectFit: 'cover',
                     objectPosition: 'center',
                     transition: 'transform 0.3s ease',
-                    imageRendering: 'auto',
-                    WebkitImageRendering: 'auto',
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    transform: `translate3d(0, 0, 0) ${hovered === idx ? 'scale(1.05)' : 'scale(1)'}`,
-                    willChange: 'transform',
-                    WebkitTransform: `translate3d(0, 0, 0) ${hovered === idx ? 'scale(1.05)' : 'scale(1)'}`,
-                    imageSmoothingEnabled: true,
-                    WebkitImageSmoothingEnabled: true,
-                    MozImageSmoothingEnabled: true,
-                    msImageSmoothingEnabled: true,
-                    imageSmoothingQuality: 'high',
-                    WebkitImageSmoothingQuality: 'high',
-                    filter: servicio.nombre === 'Tratamientos Corporales' ? 'contrast(1.1) saturate(1.1) brightness(1.2) sharpness(0.5)' : 'none',
-                    WebkitFilter: servicio.nombre === 'Tratamientos Corporales' ? 'contrast(1.1) saturate(1.1) brightness(1.2) sharpness(0.5)' : 'none',
-                  }} 
+                    transform: hovered === idx ? 'scale(1.05)' : 'scale(1)',
+                    filter: servicio.nombre === 'Tratamientos Corporales' ? 'contrast(1.1) saturate(1.1) brightness(1.2)' : 'none',
+                  }}
+                  quality={85}
+                  priority={idx === 0}
+                  loading={idx === 0 ? 'eager' : 'lazy'}
                 />
               </div>
               <div

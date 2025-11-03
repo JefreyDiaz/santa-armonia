@@ -10,7 +10,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'Excelente experiencia en Santa Armonía. El masaje fue increíble y me sentí completamente renovada. Las terapeutas son muy profesionales y el ambiente es muy relajante.',
     fecha: 'Hace 2 semanas',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0004.jpg'
   },
   {
     id: 2,
@@ -19,7 +18,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'Mi piel se ve increíble después del tratamiento facial. La limpieza fue muy profunda y me dieron excelentes consejos para el cuidado diario.',
     fecha: 'Hace 1 mes',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0005.jpg'
   },
   {
     id: 3,
@@ -28,7 +26,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'La envoltura de algas fue una experiencia única. Me sentí completamente detoxificada y mi piel quedó súper suave. Definitivamente volveré.',
     fecha: 'Hace 3 semanas',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0006.jpg'
   },
   {
     id: 4,
@@ -37,7 +34,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'El masaje con piedras calientes fue espectacular. Las piedras volcánicas me ayudaron a relajarme completamente. Altamente recomendado.',
     fecha: 'Hace 2 meses',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0007.jpg'
   },
   {
     id: 5,
@@ -46,7 +42,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'El tratamiento anti-age superó mis expectativas. Mi piel se ve más joven y radiante. Las terapeutas son muy expertas en su trabajo.',
     fecha: 'Hace 1 mes',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0008.jpg'
   },
   {
     id: 6,
@@ -55,7 +50,6 @@ const testimonios = [
     calificacion: 5,
     comentario: 'El drenaje linfático me ayudó mucho con la retención de líquidos. Me sentí más ligera y con más energía después del tratamiento.',
     fecha: 'Hace 3 semanas',
-    foto: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0009.jpg'
   }
 ];
 
@@ -391,19 +385,22 @@ export default function Testimonios() {
                 marginBottom: 'var(--spa-spacing-md)',
               }}
             >
-              <img
-                src={testimonios[currentIndex].foto}
-                alt={testimonios[currentIndex].nombre}
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginRight: 'var(--spa-spacing-md)',
-                  border: '3px solid var(--spa-accent)',
-                  transition: 'all 0.3s ease',
-                }}
-              />
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                marginRight: 'var(--spa-spacing-md)',
+                border: '3px solid var(--spa-accent)',
+                flexShrink: 0,
+                background: 'var(--spa-gradient-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                color: 'white',
+              }}>
+                👤
+              </div>
               <div>
                 <h3 style={{
                   margin: 0,

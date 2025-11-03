@@ -104,7 +104,7 @@ const otrosServiciosEspecializados = [
     precio: 0,
     descripcion: 'Consulta especializada para evaluar tus necesidades y determinar el mejor tratamiento facial o corporal según tu tipo de piel y objetivos.',
     precioEspecial: '$ Sin costo',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0007.jpg'
+    imagen: '/images/Servicios/Facial/WIL_5066.jpg'
   },
   {
     id: 'cauterizacion-verrugas',
@@ -112,21 +112,21 @@ const otrosServiciosEspecializados = [
     indicacion: 'SEGÚN VALORACIÓN MÉDICA',
     descripcion: 'Tratamiento especializado para la eliminación segura de verrugas y lunares mediante técnicas de cauterización.',
     precio: '$ Según valoración',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0007.jpg'
+    imagen: '/images/Servicios/Facial/WIL_5059.jpg'
   },
   {
     id: 'lipo-papada',
     nombre: 'Lipo Papada',
     descripcion: 'Tratamiento de liposucción de papada a través de quemadores de grasa especializados.',
     precio: '$ Según valoración',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0009.jpg'
+    imagen: '/images/Servicios/masaje/WIL_5213.jpg'
   },
   {
     id: 'lispoflas',
     nombre: 'Lispoflas',
     descripcion: 'Tratamiento especializado para la reducción de grasa localizada mediante técnicas avanzadas.',
     precio: '$ Según valoración',
-    imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0009.jpg'
+    imagen: '/images/Servicios/masaje/WIL_5194.jpg'
   }
 ];
 
@@ -145,7 +145,7 @@ const sueroTerapia = {
     'Entre otros'
   ],
   precio: '$ De acuerdo al suero',
-  imagen: '/images/multimedia-santa-armonia/Nuestros-servicios/Nuestros servicios_page-0010.jpg'
+  imagen: '/images/Servicios/general/401e507fd8d66d1a9ec18559a4bce0a0-xlarge.jpg'
 };
 
 export default function OtrosServiciosPage() {

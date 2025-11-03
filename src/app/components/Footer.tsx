@@ -544,18 +544,23 @@ export default function Footer() {
                   <div style={{ 
                     width: '32px', 
                     height: '24px', 
+                    position: 'relative',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center' 
                   }}>
-                    <img 
+                    <Image 
                       src="/images/medios-pago/davivienda.png" 
-                      alt="Davivienda" 
+                      alt="Davivienda"
+                      width={32}
+                      height={24}
                       style={{ 
                         maxHeight: '24px', 
                         maxWidth: '32px',
                         objectFit: 'contain'
-                      }} 
+                      }}
+                      loading="lazy"
+                      quality={75}
                     />
                   </div>
                   <span>3148663880</span>
@@ -564,18 +569,23 @@ export default function Footer() {
                   <div style={{ 
                     width: '32px', 
                     height: '24px', 
+                    position: 'relative',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center' 
                   }}>
-                    <img 
+                    <Image 
                       src="/images/medios-pago/nequi.png" 
-                      alt="Nequi" 
+                      alt="Nequi"
+                      width={32}
+                      height={24}
                       style={{ 
                         maxHeight: '24px', 
                         maxWidth: '32px',
                         objectFit: 'contain'
-                      }} 
+                      }}
+                      loading="lazy"
+                      quality={75}
                     />
                   </div>
                   <span>3157274521</span>
@@ -584,18 +594,23 @@ export default function Footer() {
                   <div style={{ 
                     width: '32px', 
                     height: '24px', 
+                    position: 'relative',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center' 
                   }}>
-                    <img 
+                    <Image 
                       src="/images/medios-pago/Bancolombia.png" 
-                      alt="Bancolombia" 
+                      alt="Bancolombia"
+                      width={32}
+                      height={24}
                       style={{ 
                         maxHeight: '24px', 
                         maxWidth: '32px',
                         objectFit: 'contain'
-                      }} 
+                      }}
+                      loading="lazy"
+                      quality={75}
                     />
                   </div>
                   <span>85925130279</span>
@@ -604,18 +619,23 @@ export default function Footer() {
                   <div style={{ 
                     width: '32px', 
                     height: '24px', 
+                    position: 'relative',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center' 
                   }}>
-                    <img 
+                    <Image 
                       src="/images/medios-pago/breb.png" 
-                      alt="Llave" 
+                      alt="Llave"
+                      width={32}
+                      height={24}
                       style={{ 
                         maxHeight: '24px', 
                         maxWidth: '32px',
                         objectFit: 'contain'
-                      }} 
+                      }}
+                      loading="lazy"
+                      quality={75}
                     />
                   </div>
                   <span>@sandra0211</span>
@@ -624,18 +644,23 @@ export default function Footer() {
                   <div style={{ 
                     width: '32px', 
                     height: '24px', 
+                    position: 'relative',
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center' 
                   }}>
-                    <img 
+                    <Image 
                       src="/images/medios-pago/efectivo.png" 
-                      alt="Efectivo" 
+                      alt="Efectivo"
+                      width={32}
+                      height={24}
                       style={{ 
                         maxHeight: '24px', 
                         maxWidth: '32px',
                         objectFit: 'contain'
-                      }} 
+                      }}
+                      loading="lazy"
+                      quality={75}
                     />
                   </div>
                   <span>Efectivo</span>
