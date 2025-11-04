@@ -5,41 +5,22 @@ import Image from 'next/image';
 
 export default function Banner() {
   const [isMobile, setIsMobile] = useState(false);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(true); // Asumimos true para evitar flash
   
-  // Estados para scroll reveal
-  const [isVisible, setIsVisible] = useState(false);
+  // Estados para animaciones
   const [isLogoVisible, setIsLogoVisible] = useState(false);
   const [isDecorationsVisible, setIsDecorationsVisible] = useState(false);
   
-  // Referencias para Intersection Observer
+  // Referencias
   const sectionRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Intersection Observer para scroll reveal
+  // Animaciones secuenciales sin Intersection Observer para primera carga
   useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (entry.target === sectionRef.current) {
-            setIsVisible(true);
-            setTimeout(() => setIsDecorationsVisible(true), 300);
-            setTimeout(() => setIsLogoVisible(true), 600);
-          }
-        }
-      });
-    }, observerOptions);
-
-    // Observar elementos
-    if (sectionRef.current) observer.observe(sectionRef.current);
-
-    return () => observer.disconnect();
+    // Trigger animaciones inmediatamente
+    setTimeout(() => setIsDecorationsVisible(true), 200);
+    setTimeout(() => setIsLogoVisible(true), 400);
   }, []);
 
   useEffect(() => {
@@ -53,34 +34,37 @@ export default function Banner() {
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      const handleLoadedData = () => {
+      const handleCanPlayThrough = () => {
+        // Video completamente cargado y listo para reproducir
         setIsVideoLoaded(true);
       };
       
-      const handleCanPlay = () => {
-        setIsVideoLoaded(true);
+      const handleLoadedMetadata = () => {
+        // Metadatos cargados, mostrar video incluso si no está completo
+        setTimeout(() => setIsVideoLoaded(true), 200);
       };
       
       const handleError = (e) => {
         console.warn('Error cargando video:', e);
+        // Mantener imagen de fallback si hay error
         setIsVideoLoaded(false);
       };
 
-      // Agregar eventos para detectar carga
-      video.addEventListener('loadeddata', handleLoadedData);
-      video.addEventListener('canplay', handleCanPlay);
+      // Agregar eventos optimizados
+      video.addEventListener('canplaythrough', handleCanPlayThrough);
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
       video.addEventListener('error', handleError);
       
-      // Timeout de fallback reducido para mostrar el video después de 1.5 segundos
+      // Timeout de fallback muy corto para WebM (son más rápidos)
       const fallbackTimeout = setTimeout(() => {
         if (!isVideoLoaded) {
           setIsVideoLoaded(true);
         }
-      }, 1500);
+      }, 800);
       
       return () => {
-        video.removeEventListener('loadeddata', handleLoadedData);
-        video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('canplaythrough', handleCanPlayThrough);
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
         video.removeEventListener('error', handleError);
         clearTimeout(fallbackTimeout);
       };
@@ -105,9 +89,6 @@ export default function Banner() {
         zIndex: 0,
         margin: 0,
         padding: 0,
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transition: 'all 1s ease-out',
       }}
     >
       <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -194,47 +175,31 @@ export default function Banner() {
           zIndex: -2,
           margin: 0,
           padding: 0,
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(1.1)',
-          transition: 'all 1.5s ease-out',
         }}
       >
-        {/* Imagen de fallback mientras carga el video */}
-        {!isVideoLoaded && (
-          <Image
-            src="/images/Servicios/general/ed9000f0cd2e51871fa54a100a4d7c62-cover.jpg"
-            alt="Santa Armonía Spa Background"
-            fill
-            style={{
-              objectFit: 'cover',
-              objectPosition: 'center',
-            }}
-            quality={75}
-            priority
-          />
-        )}
-        
         <video
           ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
+          poster="/images/Servicios/general/ed9000f0cd2e51871fa54a100a4d7c62-cover.jpg"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center',
             opacity: isVideoLoaded ? 1 : 0,
-            transition: 'opacity 0.8s ease-in-out',
+            transition: 'opacity 0.6s ease-in-out',
             position: 'absolute',
             top: 0,
             left: 0,
-            zIndex: 1
+            zIndex: 1,
+            willChange: 'opacity',
           }}
         >
-          <source src="/videos/hero-1.mp4" type="video/mp4" />
+          <source src="/videos/hero-1-1.webm" type="video/webm" />
           Tu navegador no soporta videos HTML5.
         </video>
       </div>
@@ -251,8 +216,6 @@ export default function Banner() {
           zIndex: -1,
           pointerEvents: 'none',
           background: 'linear-gradient(135deg, rgba(139, 125, 155, 0.1) 0%, rgba(184, 169, 201, 0.15) 50%, rgba(212, 196, 231, 0.2) 100%)',
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 1.5s ease-out 0.3s',
         }}
       />
       
