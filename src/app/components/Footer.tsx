@@ -758,7 +758,8 @@ export default function Footer() {
                 overflowY: 'auto',
                 padding: isMobile ? '20px' : '30px',
                 transition: 'width 0.3s ease',
-                display: (isMobile && selectedPdf) ? 'none' : 'block'
+                display: (isMobile && selectedPdf) ? 'none' : 'flex',
+                flexDirection: 'column'
               }}>
                 <div style={{
                   display: 'flex',
@@ -808,12 +809,14 @@ export default function Footer() {
                 <div style={{
                   color: '#666',
                   marginBottom: '20px',
-                  fontSize: '14px',
+                  fontSize: isMobile ? '13px' : '14px',
                   lineHeight: '1.5'
                 }}>
-                  {selectedPdf ? 
-                    'Haz clic en otro certificado para visualizarlo' : 
-                    'Selecciona un certificado de la lista para visualizarlo'
+                  {isMobile ? 
+                    'Selecciona un certificado para abrirlo en tu visor de PDFs' :
+                    (selectedPdf ? 
+                      'Haz clic en otro certificado para visualizarlo' : 
+                      'Selecciona un certificado de la lista para visualizarlo')
                   }
                 </div>
 
@@ -865,10 +868,10 @@ export default function Footer() {
                         }
                       }}
                     >
-                      <span style={{ fontSize: '20px' }}>
+                      <span style={{ fontSize: isMobile ? '18px' : '20px', flexShrink: 0 }}>
                         {selectedPdf === cert ? '📄' : '📋'}
                       </span>
-                      <span style={{ flex: 1 }}>
+                      <span style={{ flex: 1, wordBreak: 'break-word' }}>
                         {cert.replace('.pdf', '')}
                       </span>
                     </div>
@@ -876,59 +879,48 @@ export default function Footer() {
                 </div>
               </div>
 
-              {/* Panel derecho - Visor de PDF */}
-              {selectedPdf && (
+              {/* Panel derecho - Visor de PDF (Solo Desktop) */}
+              {selectedPdf && !isMobile && (
                 <div style={{
                   flex: 1,
-                  display: isMobile ? 'flex' : (selectedPdf ? 'flex' : 'none'),
+                  display: 'flex',
                   flexDirection: 'column',
-                  backgroundColor: '#f9f9f9',
-                  width: isMobile ? '100%' : 'auto',
-                  position: isMobile ? 'absolute' : 'relative',
-                  top: isMobile ? 0 : 'auto',
-                  left: isMobile ? 0 : 'auto',
-                  right: isMobile ? 0 : 'auto',
-                  bottom: isMobile ? 0 : 'auto',
-                  zIndex: isMobile ? 10 : 'auto'
+                  backgroundColor: '#f9f9f9'
                 }}>
                   <div style={{
-                    padding: isMobile ? '15px 20px' : '20px 30px',
+                    padding: '20px 30px',
                     borderBottom: '1px solid #e0e0e0',
                     backgroundColor: 'white',
                     display: 'flex',
-                    flexDirection: isMobile ? 'column' : 'row',
-                    gap: isMobile ? '10px' : '0',
                     justifyContent: 'space-between',
-                    alignItems: isMobile ? 'stretch' : 'center'
+                    alignItems: 'center'
                   }}>
                     <h3 style={{
                       margin: 0,
                       color: '#333',
-                      fontSize: isMobile ? '16px' : '18px',
+                      fontSize: '18px',
                       fontWeight: '600',
                       fontFamily: 'Montserrat, sans-serif',
-                      maxWidth: isMobile ? '100%' : '70%',
+                      maxWidth: '70%',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: isMobile ? 'normal' : 'nowrap',
-                      lineHeight: isMobile ? '1.3' : 'normal'
+                      whiteSpace: 'nowrap'
                     }}>
                       {selectedPdf.replace('.pdf', '')}
                     </h3>
                     <button
                       onClick={() => setSelectedPdf(null)}
                       style={{
-                        padding: isMobile ? '12px 20px' : '8px 20px',
+                        padding: '8px 20px',
                         borderRadius: '6px',
                         border: '2px solid var(--spa-primary)',
                         backgroundColor: 'white',
                         color: 'var(--spa-primary)',
                         cursor: 'pointer',
-                        fontSize: isMobile ? '16px' : '14px',
+                        fontSize: '14px',
                         fontWeight: '600',
                         fontFamily: 'Montserrat, sans-serif',
-                        transition: 'all 0.3s ease',
-                        whiteSpace: 'nowrap'
+                        transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--spa-primary)';
@@ -956,6 +948,108 @@ export default function Footer() {
                       }}
                       title={selectedPdf}
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Vista de PDF para Móvil */}
+              {selectedPdf && isMobile && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'white',
+                  zIndex: 10,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{
+                    padding: '15px 20px',
+                    borderBottom: '1px solid #e0e0e0',
+                    backgroundColor: 'white'
+                  }}>
+                    <button
+                      onClick={() => setSelectedPdf(null)}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '6px',
+                        border: '2px solid var(--spa-primary)',
+                        backgroundColor: 'white',
+                        color: 'var(--spa-primary)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        fontFamily: 'Montserrat, sans-serif',
+                        width: '100%'
+                      }}
+                    >
+                      ← Volver a la lista
+                    </button>
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                  }}>
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '30px 20px',
+                      maxWidth: '400px'
+                    }}>
+                      <div style={{
+                        fontSize: '60px',
+                        marginBottom: '20px'
+                      }}>📄</div>
+                      <h3 style={{
+                        color: '#333',
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        marginBottom: '15px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        lineHeight: '1.3'
+                      }}>
+                        {selectedPdf.replace('.pdf', '')}
+                      </h3>
+                      <p style={{
+                        color: '#666',
+                        fontSize: '14px',
+                        marginBottom: '25px',
+                        lineHeight: '1.5'
+                      }}>
+                        Toca el botón para abrir el certificado en tu visor de PDFs
+                      </p>
+                      <a
+                        href={`/docs/${selectedPdf}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          padding: '15px 30px',
+                          backgroundColor: 'var(--spa-primary)',
+                          color: 'white',
+                          borderRadius: '8px',
+                          textDecoration: 'none',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          fontFamily: 'Montserrat, sans-serif',
+                          boxShadow: '0 4px 12px rgba(93, 156, 156, 0.3)'
+                        }}
+                      >
+                        📖 Abrir Certificado
+                      </a>
+                      <p style={{
+                        color: '#999',
+                        fontSize: '12px',
+                        marginTop: '20px',
+                        lineHeight: '1.4'
+                      }}>
+                        El PDF se abrirá en una nueva pestaña
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
