@@ -66,31 +66,22 @@ export default function Banner() {
         setIsVideoLoaded(false);
       };
 
-      const handleLoadStart = () => {
-        // Video iniciando carga
-      };
-
-      // Agregar múltiples eventos para asegurar la detección
+      // Agregar eventos para detectar carga
       video.addEventListener('loadeddata', handleLoadedData);
       video.addEventListener('canplay', handleCanPlay);
       video.addEventListener('error', handleError);
-      video.addEventListener('loadstart', handleLoadStart);
       
-      // Forzar la carga del video
-      video.load();
-      
-      // Timeout de fallback para mostrar el video después de 3 segundos
+      // Timeout de fallback reducido para mostrar el video después de 1.5 segundos
       const fallbackTimeout = setTimeout(() => {
         if (!isVideoLoaded) {
           setIsVideoLoaded(true);
         }
-      }, 3000);
+      }, 1500);
       
       return () => {
         video.removeEventListener('loadeddata', handleLoadedData);
         video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('error', handleError);
-        video.removeEventListener('loadstart', handleLoadStart);
         clearTimeout(fallbackTimeout);
       };
     }
@@ -218,6 +209,7 @@ export default function Banner() {
               objectFit: 'cover',
               objectPosition: 'center',
             }}
+            quality={75}
             priority
           />
         )}
@@ -228,14 +220,14 @@ export default function Banner() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center',
             opacity: isVideoLoaded ? 1 : 0,
-            transition: 'opacity 1s ease-in-out',
+            transition: 'opacity 0.8s ease-in-out',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -306,6 +298,8 @@ export default function Banner() {
               objectFit: 'contain',
               filter: 'drop-shadow(0 4px 16px rgba(139, 107, 139, 0.2))',
             }}
+            priority
+            quality={90}
           />
         </div>
       </div>

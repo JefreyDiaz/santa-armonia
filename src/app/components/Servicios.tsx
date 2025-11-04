@@ -234,7 +234,7 @@ export default function Servicios() {
                     transform: hovered === idx ? 'scale(1.05)' : 'scale(1)',
                     filter: servicio.nombre === 'Tratamientos Corporales' ? 'contrast(1.1) saturate(1.1) brightness(1.2)' : 'none',
                   }}
-                  quality={85}
+                  quality={75}
                   priority={idx === 0}
                   loading={idx === 0 ? 'eager' : 'lazy'}
                 />

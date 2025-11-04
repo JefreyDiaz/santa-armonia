@@ -133,10 +133,11 @@ function GalleryCard({ item, onSelect, fuente }:{ item: GaleriaItem; onSelect: (
           src={images[index]}
           alt={item.titulo}
           fill
+          loading="lazy"
           style={{
             objectFit: 'cover',
           }}
-          quality={85}
+          quality={75}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {/* Controles solo si hay más de una imagen */}
