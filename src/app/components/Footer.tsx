@@ -13,12 +13,25 @@ export default function Footer() {
   // Estados para el modal de certificaciones
   const [showCertModal, setShowCertModal] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Referencias para Intersection Observer
   const footerRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const columnsRef = useRef<HTMLDivElement>(null);
   const copyrightRef = useRef<HTMLDivElement>(null);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Lista de certificaciones
   const certificaciones = [
@@ -703,9 +716,9 @@ export default function Footer() {
               backgroundColor: 'rgba(0, 0, 0, 0.8)',
               display: 'flex',
               justifyContent: 'center',
-              alignItems: 'center',
+              alignItems: isMobile ? 'flex-end' : 'center',
               zIndex: 9999,
-              padding: '20px'
+              padding: isMobile ? '0' : '20px'
             }}
             onClick={() => {
               setShowCertModal(false);
@@ -722,24 +735,30 @@ export default function Footer() {
               role="document"
               style={{
                 backgroundColor: 'white',
-                borderRadius: '15px',
-                width: '90%',
-                maxWidth: '1200px',
-                height: '90vh',
+                borderRadius: isMobile ? '15px 15px 0 0' : '15px',
+                width: isMobile ? '100%' : '90%',
+                maxWidth: isMobile ? '100%' : '1200px',
+                height: isMobile ? '95vh' : '90vh',
                 display: 'flex',
                 flexDirection: 'row',
                 overflow: 'hidden',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                margin: isMobile ? '0' : 'auto',
+                position: isMobile ? 'fixed' : 'relative',
+                bottom: isMobile ? 0 : 'auto',
+                left: isMobile ? 0 : 'auto',
+                right: isMobile ? 0 : 'auto'
               }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Panel izquierdo - Lista de certificaciones */}
               <div style={{
-                width: selectedPdf ? '350px' : '100%',
-                borderRight: selectedPdf ? '1px solid #e0e0e0' : 'none',
+                width: isMobile ? '100%' : (selectedPdf ? '350px' : '100%'),
+                borderRight: (!isMobile && selectedPdf) ? '1px solid #e0e0e0' : 'none',
                 overflowY: 'auto',
-                padding: '30px',
-                transition: 'width 0.3s ease'
+                padding: isMobile ? '20px' : '30px',
+                transition: 'width 0.3s ease',
+                display: (isMobile && selectedPdf) ? 'none' : 'block'
               }}>
                 <div style={{
                   display: 'flex',
@@ -751,7 +770,7 @@ export default function Footer() {
                     id="cert-modal-title"
                     style={{
                       color: 'var(--spa-primary)',
-                      fontSize: '24px',
+                      fontSize: isMobile ? '20px' : '24px',
                       fontWeight: 'bold',
                       margin: 0,
                       fontFamily: 'Montserrat, sans-serif'
@@ -816,7 +835,7 @@ export default function Footer() {
                         }
                       }}
                       style={{
-                        padding: '15px 20px',
+                        padding: isMobile ? '12px 15px' : '15px 20px',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         backgroundColor: selectedPdf === cert ? 'var(--spa-primary)' : '#f5f5f5',
@@ -824,11 +843,12 @@ export default function Footer() {
                         transition: 'all 0.3s ease',
                         border: selectedPdf === cert ? '2px solid var(--spa-primary)' : '2px solid transparent',
                         fontFamily: 'Montserrat, sans-serif',
-                        fontSize: '14px',
+                        fontSize: isMobile ? '13px' : '14px',
                         fontWeight: selectedPdf === cert ? '600' : '500',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: isMobile ? '8px' : '10px',
+                        lineHeight: '1.3'
                       }}
                       onMouseEnter={(e) => {
                         if (selectedPdf !== cert) {
@@ -860,44 +880,55 @@ export default function Footer() {
               {selectedPdf && (
                 <div style={{
                   flex: 1,
-                  display: 'flex',
+                  display: isMobile ? 'flex' : (selectedPdf ? 'flex' : 'none'),
                   flexDirection: 'column',
-                  backgroundColor: '#f9f9f9'
+                  backgroundColor: '#f9f9f9',
+                  width: isMobile ? '100%' : 'auto',
+                  position: isMobile ? 'absolute' : 'relative',
+                  top: isMobile ? 0 : 'auto',
+                  left: isMobile ? 0 : 'auto',
+                  right: isMobile ? 0 : 'auto',
+                  bottom: isMobile ? 0 : 'auto',
+                  zIndex: isMobile ? 10 : 'auto'
                 }}>
                   <div style={{
-                    padding: '20px 30px',
+                    padding: isMobile ? '15px 20px' : '20px 30px',
                     borderBottom: '1px solid #e0e0e0',
                     backgroundColor: 'white',
                     display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    gap: isMobile ? '10px' : '0',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: isMobile ? 'stretch' : 'center'
                   }}>
                     <h3 style={{
                       margin: 0,
                       color: '#333',
-                      fontSize: '18px',
+                      fontSize: isMobile ? '16px' : '18px',
                       fontWeight: '600',
                       fontFamily: 'Montserrat, sans-serif',
-                      maxWidth: '70%',
+                      maxWidth: isMobile ? '100%' : '70%',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: isMobile ? 'normal' : 'nowrap',
+                      lineHeight: isMobile ? '1.3' : 'normal'
                     }}>
                       {selectedPdf.replace('.pdf', '')}
                     </h3>
                     <button
                       onClick={() => setSelectedPdf(null)}
                       style={{
-                        padding: '8px 20px',
+                        padding: isMobile ? '12px 20px' : '8px 20px',
                         borderRadius: '6px',
                         border: '2px solid var(--spa-primary)',
                         backgroundColor: 'white',
                         color: 'var(--spa-primary)',
                         cursor: 'pointer',
-                        fontSize: '14px',
+                        fontSize: isMobile ? '16px' : '14px',
                         fontWeight: '600',
                         fontFamily: 'Montserrat, sans-serif',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        whiteSpace: 'nowrap'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--spa-primary)';
