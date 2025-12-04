@@ -139,15 +139,10 @@ function obtenerHorariosPorFecha(fecha: string): string[] {
 function isHorarioPasado(fecha: string, horario: string): boolean {
   const ahora = new Date();
   
-  console.log(`=== Verificando horario ${horario} para fecha ${fecha} ===`);
-  
   // Solo aplicar restricciones si la fecha es hoy
   if (!esHoy(fecha)) {
-    console.log(`- No es hoy, retornando false`);
     return false;
   }
-  
-  console.log(`- Es hoy, verificando horario...`);
   
   // Crear la fecha del horario seleccionado usando la fecha actual como base
   const [horas, minutos] = horario.split(':').map(Number);
@@ -156,12 +151,6 @@ function isHorarioPasado(fecha: string, horario: string): boolean {
   
   // Agregar 30 minutos de margen para evitar reservas muy cercanas
   const margen = new Date(fechaHorario.getTime() + 30 * 60 * 1000);
-  
-  // Debug: Solo para hoy
-  console.log(`- Ahora: ${ahora.toLocaleString()}`);
-  console.log(`- Horario: ${fechaHorario.toLocaleString()}`);
-  console.log(`- Margen: ${margen.toLocaleString()}`);
-  console.log(`- ¿Ya pasó?: ${ahora >= margen}`);
   
   // Verificar si el horario ya pasó
   return ahora >= margen;
@@ -175,11 +164,6 @@ function esHoy(fecha: string): boolean {
   const hoyString = hoy.getFullYear() + '-' + 
                    String(hoy.getMonth() + 1).padStart(2, '0') + '-' + 
                    String(hoy.getDate()).padStart(2, '0');
-  
-  console.log(`Verificando si es hoy:`);
-  console.log(`- Fecha seleccionada: ${fecha}`);
-  console.log(`- Hoy calculado: ${hoyString}`);
-  console.log(`- ¿Es hoy?: ${fecha === hoyString}`);
   
   return fecha === hoyString;
 }
@@ -218,7 +202,7 @@ async function fetchHorariosOcupados(fecha: string, categoria: string): Promise<
       return data.horariosOcupados || [];
     }
   } catch (error) {
-    console.error('Error al obtener horarios ocupados:', error);
+        // Error silencioso - los horarios ocupados se manejan en el servidor
   }
   return [];
 }
@@ -284,10 +268,6 @@ const ReservarContent = memo(function ReservarContent() {
   }
 
   async function handleDateSelect(date: string) {
-    console.log(`Fecha seleccionada: ${date}`);
-    console.log(`Tipo de fecha: ${typeof date}`);
-    console.log(`Fecha actual: ${new Date().toISOString().split('T')[0]}`);
-    
     setForm({ ...form, fecha: date, horario: '' }); // Limpiar horario al cambiar fecha
     setShowCalendario(false);
     setShowHorarios(true);
@@ -300,7 +280,7 @@ const ReservarContent = memo(function ReservarContent() {
       const ocupados = await fetchHorariosOcupados(date, cat);
       setHorariosOcupados(ocupados);
     } catch (error) {
-      console.error('Error al cargar horarios ocupados:', error);
+      // Error silencioso - los horarios ocupados se manejan en el servidor
     } finally {
       setLoadingHorarios(false);
     }
@@ -368,8 +348,6 @@ const ReservarContent = memo(function ReservarContent() {
         notas: form.notas || ""
       };
 
-      console.log('Enviando reserva:', reservaData);
-
       const res = await fetch("/api/reservar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -384,7 +362,6 @@ const ReservarContent = memo(function ReservarContent() {
         return;
       }
       
-      console.log('Reserva exitosa:', data);
       setEnviado(true);
     } catch (err: any) {
       console.error('Error en handleSubmit:', err);

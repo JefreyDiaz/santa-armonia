@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initDatabase, saveOutgoingMessage } from '@/lib/database';
+import { initDatabase, saveOutgoingMessage, getPool } from '@/lib/database';
+import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,7 +25,8 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
     const fechaTarget = fechaEspecifica || formatDateLocal(new Date());
     console.log(`🔄 Iniciando envío de recordatorios para ${fechaTarget} (${horasAntes} horas antes)...`);
     
-    const db = await initDatabase();
+    await initDatabase();
+    const pool = getPool();
     const ahora = new Date();
     const ahoraMinutos = ahora.getHours() * 60 + ahora.getMinutes();
 
@@ -32,33 +34,35 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
     console.log(`🔍 Buscando reservas para fecha: ${fechaTarget}`);
     
     // Primero, ver todas las reservas del día
-    const todasReservas = await db.all(
-      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, t.nombre AS tratamiento
+    const todasReservasResult = await pool.query(
+      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, r.tratamiento_nombre AS tratamiento
        FROM reservas r
        JOIN clientes c ON r.cliente_id = c.id
-       JOIN tratamientos t ON r.tratamiento_id = t.id
-       WHERE r.fecha = ?`,
+       WHERE r.fecha = $1`,
       [fechaTarget]
     );
     
+    const todasReservas = todasReservasResult.rows;
     console.log(`📊 Total reservas encontradas para ${fechaTarget}:`, todasReservas.length);
     
-    // Luego, filtrar las que necesitan recordatorio
-    const reservas = await db.all(
-      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, t.nombre AS tratamiento
+    // Luego, filtrar las que necesitan recordatorio (que no tengan recordatorio enviado hoy)
+    const hoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const reservasResult = await pool.query(
+      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, r.tratamiento_nombre AS tratamiento
        FROM reservas r
        JOIN clientes c ON r.cliente_id = c.id
-       JOIN tratamientos t ON r.tratamiento_id = t.id
-       WHERE r.fecha = ? 
+       WHERE r.fecha = $1 
        AND r.estado IN ('confirmada','pendiente')
        AND NOT EXISTS (
          SELECT 1 FROM wa_outgoing wo 
          WHERE wo.reserva_id = r.id 
          AND wo.purpose = 'recordatorio'
-         AND DATE(wo.created_at) = DATE('now')
+         AND DATE(wo.created_at) = $2
        )`,
-      [fechaTarget]
+      [fechaTarget, hoy]
     );
+    
+    const reservas = reservasResult.rows;
 
     console.log(`📋 Encontradas ${reservas.length} reservas para revisar`);
     
@@ -92,60 +96,43 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
         try {
           console.log(`📱 Enviando recordatorio a ${reserva.nombre} para ${reserva.horario}`);
           
-          // Usar mensaje interactivo con botones
-          const mensaje = `*Spa Santa Armonía* 🧘‍♀️\n\nHola ${reserva.nombre} 👋\n\nTe recordamos tu cita:\n\n• Tratamiento: *${reserva.tratamiento}*\n• Fecha: *${reserva.fecha}*\n• Hora: *${reserva.horario}*\n\n📍 Cra. XX #XX-XX, Manizales\n📞 301 536 1106\n\n_Nota: Si llegas con hasta 10 min de retraso, ese tiempo se descontará de tu sesión. Si llegas 15 min después de la hora agendada, no podremos atenderte ese día._\n\nPor favor confirma tu asistencia:\n\n✅ Escribe "CONFIRMAR" para confirmar\n❌ Escribe "CANCELAR" para cancelar`;
+          // Intentar usar plantilla si está disponible, sino usar mensaje libre
+          const contentSidRecordatorio = process.env.TWILIO_CONTENT_SID_RECORDATORIO;
+          let wa;
           
-          const baseUrl = process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}` 
-            : 'http://localhost:3000';
-          
-          // Intentar primero con botones interactivos
-          let waResponse;
-          try {
-            waResponse = await fetch(`${baseUrl}/api/whatsapp/send`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to: reserva.telefono,
-                text: mensaje,
-                buttons: [
-                  {
-                    type: "reply",
-                    reply: {
-                      id: "CONFIRMAR",
-                      title: "✅ Confirmar"
-                    }
-                  },
-                  {
-                    type: "reply", 
-                    reply: {
-                      id: "CANCELAR",
-                      title: "❌ Cancelar"
-                    }
-                  }
-                ]
-              })
+          if (contentSidRecordatorio) {
+            // Usar Content Template (recomendado)
+            console.log('📱 Usando Content Template para recordatorio:', contentSidRecordatorio);
+            wa = await sendWhatsAppTemplate({
+              to: reserva.telefono,
+              templateName: 'reserva_recordatorio',
+              language: 'es',
+              contentSid: contentSidRecordatorio,
+              components: [
+                {
+                  type: 'body',
+                  parameters: [
+                    { type: 'text', text: reserva.nombre },
+                    { type: 'text', text: reserva.tratamiento },
+                    { type: 'text', text: reserva.fecha },
+                    { type: 'text', text: reserva.horario },
+                  ],
+                },
+              ],
             });
-          } catch (error) {
-            console.log('Error con botones interactivos, enviando mensaje de texto simple:', error);
-            // Fallback a mensaje de texto simple
-            waResponse = await fetch(`${baseUrl}/api/whatsapp/send`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to: reserva.telefono,
-                text: mensaje
-              })
+          } else {
+            // Fallback: mensaje libre (solo funciona dentro de ventana de 24h)
+            console.log('⚠️ No hay ContentSid para recordatorio. Usando mensaje libre (solo funciona dentro de 24h)');
+            const mensaje = `*Recordatorio* ⏰\n\nHola ${reserva.nombre}, te recordamos tu cita:\n\n• Tratamiento: *${reserva.tratamiento}*\n• Fecha: *${reserva.fecha}*\n• Hora: *${reserva.horario}*\n\n📍 Cra 9B #57D - 27 La Carolita, Manizales\n📞 315 727 4521\n\nPor favor confirma tu asistencia:\n\n1️⃣ Escribe *1* para confirmar\n2️⃣ Escribe *2* para cancelar\n\n_Nota: Si no respondes, tu reserva quedará confirmada por defecto._`;
+            
+            wa = await sendWhatsAppText({
+              to: reserva.telefono,
+              body: mensaje,
             });
           }
-
-          if (!waResponse.ok) {
-            const errorData = await waResponse.json();
-            throw new Error(`Error ${waResponse.status}: ${errorData.error || 'Error desconocido'}`);
-          }
-
-          const waData = await waResponse.json();
-          const messageId = waData?.data?.messages?.[0]?.id;
+          
+          // Guardar el messageSid para poder asociar la respuesta con la reserva
+          const messageId = (wa?.messages?.[0]?.id || wa?.sid) as string | undefined;
           
           if (messageId) {
             await saveOutgoingMessage({ 
@@ -160,7 +147,7 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
               horario: reserva.horario 
             });
             
-            console.log(`✅ Recordatorio enviado a ${reserva.nombre}`);
+            console.log(`✅ Recordatorio enviado a ${reserva.nombre} (MessageSid: ${messageId})`);
           } else {
             throw new Error('No se obtuvo ID del mensaje de WhatsApp');
           }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initDatabase, saveOutgoingMessage } from '@/lib/database';
-import { sendWhatsAppTemplate } from '@/lib/whatsapp';
+import { initDatabase, saveOutgoingMessage, getPool } from '@/lib/database';
+import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -25,18 +25,20 @@ export async function GET(req: NextRequest) {
   try {
     const horas = Number(req.nextUrl.searchParams.get('horas') || '2');
 
-    const db = await initDatabase();
+    await initDatabase();
+    const pool = getPool();
     const hoy = formatDateLocal(new Date());
 
     // Traer reservas del día con datos de contacto
-    const reservas = await db.all(
-      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, t.nombre AS tratamiento
+    const reservasResult = await pool.query(
+      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, r.tratamiento_nombre AS tratamiento
        FROM reservas r
        JOIN clientes c ON r.cliente_id = c.id
-       JOIN tratamientos t ON r.tratamiento_id = t.id
-       WHERE r.fecha = ? AND r.estado IN ('confirmada','pendiente')`,
+       WHERE r.fecha = $1 AND r.estado IN ('confirmada','pendiente')`,
       [hoy]
     );
+    
+    const reservas = reservasResult.rows;
 
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -48,26 +50,46 @@ export async function GET(req: NextRequest) {
       // Solo enviar si está en la ventana de recordatorio (ej: entre 2h y 1h antes)
       if (diff <= horas * 60 && diff > 60) {
         try {
-          const wa = await sendWhatsAppTemplate({
-            to: r.telefono,
-            templateName: 'reserva_recordatorio', // crea y aprueba esta plantilla en Meta
-            language: 'es',
-            components: [
-              {
-                type: 'body',
-                parameters: [
-                  { type: 'text', text: r.nombre },
-                  { type: 'text', text: r.tratamiento },
-                  { type: 'text', text: r.fecha },
-                  { type: 'text', text: r.horario },
-                ],
-              },
-            ],
-          });
+          // Intentar usar plantilla si está disponible, sino usar mensaje libre
+          const contentSidRecordatorio = process.env.TWILIO_CONTENT_SID_RECORDATORIO;
+          let wa;
+          
+          if (contentSidRecordatorio) {
+            // Usar Content Template (recomendado)
+            console.log('📱 Usando Content Template para recordatorio:', contentSidRecordatorio);
+            wa = await sendWhatsAppTemplate({
+              to: r.telefono,
+              templateName: 'reserva_recordatorio',
+              language: 'es',
+              contentSid: contentSidRecordatorio,
+              components: [
+                {
+                  type: 'body',
+                  parameters: [
+                    { type: 'text', text: r.nombre },
+                    { type: 'text', text: r.tratamiento },
+                    { type: 'text', text: r.fecha },
+                    { type: 'text', text: r.horario },
+                  ],
+                },
+              ],
+            });
+          } else {
+            // Fallback: mensaje libre (solo funciona dentro de ventana de 24h)
+            console.log('⚠️ No hay ContentSid para recordatorio. Usando mensaje libre (solo funciona dentro de 24h)');
+            const mensaje = `*Recordatorio* ⏰\n\nHola ${r.nombre}, te recordamos tu cita:\n\n• Tratamiento: *${r.tratamiento}*\n• Fecha: *${r.fecha}*\n• Hora: *${r.horario}*\n\n📍 Cra 9B #57D - 27 La Carolita, Manizales\n📞 315 727 4521\n\nPor favor confirma tu asistencia:\n\n1️⃣ Escribe *1* para confirmar\n2️⃣ Escribe *2* para cancelar\n\n_Nota: Si no respondes, tu reserva quedará confirmada por defecto._`;
+            
+            wa = await sendWhatsAppText({
+              to: r.telefono,
+              body: mensaje,
+            });
+          }
 
-          const messageId = wa?.messages?.[0]?.id as string | undefined;
+          // Guardar el messageSid para poder asociar la respuesta con la reserva
+          const messageId = (wa?.messages?.[0]?.id || wa?.sid) as string | undefined;
           if (messageId) {
             await saveOutgoingMessage({ waMessageId: messageId, reservaId: r.id, purpose: 'recordatorio' });
+            console.log(`✅ Recordatorio enviado a ${r.nombre} (Reserva ID: ${r.id}, MessageSid: ${messageId})`);
           }
           enviados.push({ id: r.id, to: r.telefono });
         } catch (e) {
@@ -89,36 +111,59 @@ export async function POST(req: NextRequest) {
     const { reservaId } = body || {};
     if (!reservaId) return NextResponse.json({ ok: false, error: 'reservaId requerido' }, { status: 400 });
 
-    const db = await initDatabase();
-    const r = await db.get(
-      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, t.nombre AS tratamiento
+    await initDatabase();
+    const pool = getPool();
+    const reservaResult = await pool.query(
+      `SELECT r.id, r.fecha, r.horario, r.estado, c.nombre, c.telefono, r.tratamiento_nombre AS tratamiento
        FROM reservas r
        JOIN clientes c ON r.cliente_id = c.id
-       JOIN tratamientos t ON r.tratamiento_id = t.id
-       WHERE r.id = ?`,
+       WHERE r.id = $1`,
       [reservaId]
     );
+    
+    const r = reservaResult.rows[0];
     if (!r) return NextResponse.json({ ok: false, error: 'Reserva no encontrada' }, { status: 404 });
 
-    const wa = await sendWhatsAppTemplate({
-      to: r.telefono,
-      templateName: 'reserva_recordatorio',
-      language: 'es',
-      components: [
-        {
-          type: 'body',
-          parameters: [
-            { type: 'text', text: r.nombre },
-            { type: 'text', text: r.tratamiento },
-            { type: 'text', text: r.fecha },
-            { type: 'text', text: r.horario },
-          ],
-        },
-      ],
-    });
-    const messageId = wa?.messages?.[0]?.id as string | undefined;
+    // Intentar usar plantilla si está disponible, sino usar mensaje libre
+    const contentSidRecordatorio = process.env.TWILIO_CONTENT_SID_RECORDATORIO;
+    let wa;
+    
+    if (contentSidRecordatorio) {
+      // Usar Content Template (recomendado)
+      console.log('📱 Usando Content Template para recordatorio:', contentSidRecordatorio);
+      wa = await sendWhatsAppTemplate({
+        to: r.telefono,
+        templateName: 'reserva_recordatorio',
+        language: 'es',
+        contentSid: contentSidRecordatorio,
+        components: [
+          {
+            type: 'body',
+            parameters: [
+              { type: 'text', text: r.nombre },
+              { type: 'text', text: r.tratamiento },
+              { type: 'text', text: r.fecha },
+              { type: 'text', text: r.horario },
+            ],
+          },
+        ],
+      });
+    } else {
+      // Fallback: mensaje libre (solo funciona dentro de ventana de 24h)
+      console.log('⚠️ No hay ContentSid para recordatorio. Usando mensaje libre (solo funciona dentro de 24h)');
+      const mensaje = `*Recordatorio* ⏰\n\nHola ${r.nombre}, te recordamos tu cita:\n\n• Tratamiento: *${r.tratamiento}*\n• Fecha: *${r.fecha}*\n• Hora: *${r.horario}*\n\n📍 Cra 9B #57D - 27 La Carolita, Manizales\n📞 315 727 4521\n\nPor favor confirma tu asistencia:\n\n1️⃣ Escribe *1* para confirmar\n2️⃣ Escribe *2* para cancelar\n\n_Nota: Si no respondes, tu reserva quedará confirmada por defecto._`;
+      
+      wa = await sendWhatsAppText({
+        to: r.telefono,
+        body: mensaje,
+      });
+    }
+    
+    // Guardar el messageSid para poder asociar la respuesta con la reserva
+    const messageId = (wa?.messages?.[0]?.id || wa?.sid) as string | undefined;
     if (messageId) {
       await saveOutgoingMessage({ waMessageId: messageId, reservaId: r.id, purpose: 'recordatorio' });
+      console.log(`✅ Recordatorio enviado a ${r.nombre} (Reserva ID: ${r.id}, MessageSid: ${messageId})`);
     }
     return NextResponse.json({ ok: true, sent: true, messageId });
   } catch (e) {

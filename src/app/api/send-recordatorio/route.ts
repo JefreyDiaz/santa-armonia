@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
 
       if (waResponse.ok) {
         const waData = await waResponse.json();
-        messageId = waData?.data?.messages?.[0]?.id;
+        // Con Twilio, el ID está en data.messages[0].id o data.sid
+        messageId = waData?.data?.messages?.[0]?.id || waData?.data?.sid;
         console.log('✅ Mensaje con botones enviado exitosamente:', messageId);
       } else {
         throw new Error(`Error ${waResponse.status}: ${await waResponse.text()}`);
@@ -105,7 +106,8 @@ export async function POST(req: NextRequest) {
 
       if (waResponse.ok) {
         const waData = await waResponse.json();
-        messageId = waData?.data?.messages?.[0]?.id;
+        // Con Twilio, el ID está en data.messages[0].id o data.sid
+        messageId = waData?.data?.messages?.[0]?.id || waData?.data?.sid;
         console.log('✅ Mensaje de texto enviado exitosamente:', messageId);
       } else {
         throw new Error(`Error ${waResponse.status}: ${await waResponse.text()}`);

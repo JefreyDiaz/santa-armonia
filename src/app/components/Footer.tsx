@@ -1024,8 +1024,8 @@ export default function Footer() {
                       </p>
                       <a
                         href={`/docs/${selectedPdf}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+          target="_blank"
+          rel="noopener noreferrer"
                         style={{
                           display: 'inline-block',
                           padding: '15px 30px',
@@ -1054,9 +1054,9 @@ export default function Footer() {
                 </div>
               )}
             </div>
-          </div>
+      </div>
         )}
-      </footer>
+    </footer>
     </div>
   );
 }

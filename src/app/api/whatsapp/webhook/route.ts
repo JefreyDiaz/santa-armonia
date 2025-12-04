@@ -1,120 +1,145 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findReservaIdByMessageId, updateReservaEstado } from '@/lib/database';
+import { findReservaIdByMessageId, updateReservaEstado, initDatabase, getPool } from '@/lib/database';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// Twilio webhook verification (GET) - no es necesario para Twilio, pero lo mantenemos por compatibilidad
 export async function GET(req: NextRequest) {
-  const mode = req.nextUrl.searchParams.get('hub.mode');
-  const token = req.nextUrl.searchParams.get('hub.verify_token');
-  const challenge = req.nextUrl.searchParams.get('hub.challenge');
-
-  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-    return new NextResponse(challenge || '', { status: 200 });
-  }
-  return new NextResponse('Forbidden', { status: 403 });
+  // Twilio no usa verificación GET como Meta, pero mantenemos el endpoint por compatibilidad
+  return new NextResponse('OK', { status: 200 });
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await req.json();
+    // Twilio envía los webhooks como form-data, no JSON
+    const formData = await req.formData();
+    
     // Logs detallados para debugging
-    console.log('🔔 WA webhook recibido:', JSON.stringify(payload, null, 2));
+    const formDataObj: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      formDataObj[key] = value.toString();
+    });
+    console.log('🔔 Twilio webhook recibido:', JSON.stringify(formDataObj, null, 2));
 
-    const changes = payload?.entry?.[0]?.changes?.[0]?.value;
-    const message = changes?.messages?.[0];
+    // Extraer datos del mensaje de Twilio
+    const messageSid = formData.get('MessageSid')?.toString();
+    const from = formData.get('From')?.toString(); // formato: whatsapp:+573157274521
+    const body = formData.get('Body')?.toString();
+    const to = formData.get('To')?.toString();
+    const numMedia = formData.get('NumMedia')?.toString();
 
-    if (message) {
+    // Limpiar el número de teléfono (quitar prefijo whatsapp:)
+    const cleanFrom = from?.replace(/^whatsapp:/, '') || '';
+    
       console.log('📱 Mensaje recibido:', {
-        type: message.type,
-        from: message.from,
-        context: message.context,
-        interactive: message.interactive,
-        button: message.button,
-        text: message.text
-      });
+      messageSid,
+      from: cleanFrom,
+      body,
+      to,
+      numMedia
+    });
 
-      const from = message.from; // número cliente
-      let action: 'CONFIRMAR' | 'CANCELAR' | undefined;
+    if (!body || !cleanFrom) {
+      console.log('ℹ️ No hay body o from, ignorando mensaje');
+      return NextResponse.json({ ok: true });
+    }
 
-      if (message.type === 'interactive') {
-        const id = message.interactive?.button_reply?.id as string | undefined;
-        console.log('🔘 Botón interactivo presionado:', { id, title: message.interactive?.button_reply?.title });
-        if (id === 'CONFIRMAR' || id === 'CANCELAR') action = id;
-      } else if (message.type === 'button') {
-        const text = message.button?.text as string | undefined;
-        console.log('🔘 Botón presionado:', { text });
-        if (text === 'CONFIRMAR' || text === 'CANCELAR') action = text;
-      } else if (message.text?.body) {
-        const t = (message.text.body as string).trim().toUpperCase();
-        console.log('💬 Texto recibido:', { text: t });
-        if (['CONFIRMAR', 'CANCELAR'].includes(t)) action = t as any;
-      }
+    // Detectar acción (CONFIRMAR o CANCELAR)
+    // Acepta: "1", "CONFIRMAR", o variaciones para confirmar
+    // Acepta: "2", "CANCELAR", o variaciones para cancelar
+    let action: 'CONFIRMAR' | 'CANCELAR' | undefined;
+    const bodyTrimmed = body.trim();
+    const bodyUpper = bodyTrimmed.toUpperCase();
+    
+    // Detectar por número (prioridad) o texto
+    if (bodyTrimmed === '1' || bodyUpper === 'CONFIRMAR' || bodyUpper.includes('CONFIRMAR') || bodyUpper === 'SI' || bodyUpper === 'SÍ') {
+      action = 'CONFIRMAR';
+    } else if (bodyTrimmed === '2' || bodyUpper === 'CANCELAR' || bodyUpper.includes('CANCELAR') || bodyUpper === 'NO') {
+      action = 'CANCELAR';
+    }
 
       console.log('🎯 Acción detectada:', action);
 
       if (action) {
-        const contextId = (message.context?.id as string | undefined) || undefined;
-        console.log('🔗 Context ID:', contextId);
-        
+      // Intentar encontrar la reserva por messageSid (si guardamos el SID al enviar)
         let reservaId: number | null = null;
-        if (contextId) {
+      
+      if (messageSid) {
           try {
-            reservaId = await findReservaIdByMessageId(contextId);
-            console.log('🔍 Reserva encontrada por context ID:', reservaId);
+          // Buscar si guardamos el messageSid al enviar el mensaje
+          // Nota: Necesitarías guardar el messageSid cuando envías mensajes
+          reservaId = await findReservaIdByMessageId(messageSid);
+          console.log('🔍 Reserva encontrada por messageSid:', reservaId);
           } catch (e) {
-            console.warn('❌ Error buscando reserva por context.id', e);
+          console.warn('❌ Error buscando reserva por messageSid', e);
           }
         }
 
-        if (reservaId) {
-          let nuevoEstado: 'confirmada' | 'cancelada' = 'confirmada';
-          if (action === 'CANCELAR') nuevoEstado = 'cancelada';
-          await updateReservaEstado(reservaId, nuevoEstado);
-          console.log('✅ Reserva actualizada por webhook:', { reservaId, nuevoEstado, action });
-        } else {
-          // Fallback: buscar por número de teléfono si no encontramos por context.id
-          console.log('🔍 No se encontró por context.id, buscando por número de teléfono...');
-          try {
-            const db = await initDatabase();
-            const reservaPorTelefono = await db.get(`
-              SELECT r.id FROM reservas r
-              JOIN clientes c ON r.cliente_id = c.id
-              WHERE c.telefono = ? 
-              AND r.estado IN ('confirmada', 'pendiente')
-              AND r.fecha >= DATE('now')
-              ORDER BY r.fecha DESC, r.horario DESC
-              LIMIT 1
-            `, [from]);
-            
-            if (reservaPorTelefono) {
-              let nuevoEstado: 'confirmada' | 'cancelada' = 'confirmada';
-              if (action === 'CANCELAR') nuevoEstado = 'cancelada';
-              await updateReservaEstado(reservaPorTelefono.id, nuevoEstado);
-              console.log('✅ Reserva actualizada por webhook (fallback por teléfono):', { 
-                reservaId: reservaPorTelefono.id, 
-                nuevoEstado, 
-                action,
-                telefono: from 
-              });
-            } else {
-              console.log('❌ No se pudo asociar la respuesta a una reserva por teléfono tampoco.', { from, action, contextId });
-            }
-          } catch (e) {
-            console.error('❌ Error en fallback por teléfono:', e);
+      if (!reservaId) {
+        // Fallback: buscar por número de teléfono (buscar la reserva más reciente del día)
+        console.log('🔍 Buscando reserva por número de teléfono...');
+        try {
+          await initDatabase();
+          const pool = getPool();
+          const hoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+          
+          // Buscar reserva más reciente del día con ese teléfono
+          const reservaResult = await pool.query(
+            `SELECT r.id FROM reservas r
+             JOIN clientes c ON r.cliente_id = c.id
+             WHERE (c.telefono = $1 OR c.telefono = $2)
+               AND r.estado IN ('confirmada', 'pendiente')
+               AND r.fecha >= $3
+             ORDER BY r.fecha DESC, r.horario DESC
+             LIMIT 1`,
+            [cleanFrom, cleanFrom.replace(/^\+/, ''), hoy]
+          );
+          
+          if (reservaResult.rows.length > 0) {
+            reservaId = reservaResult.rows[0].id;
+            console.log('🔍 Reserva encontrada por teléfono:', reservaId);
           }
+        } catch (e) {
+          console.error('❌ Error en fallback por teléfono:', e);
         }
+      }
+
+      if (reservaId) {
+        let nuevoEstado: 'confirmada' | 'cancelada' = 'confirmada';
+        if (action === 'CANCELAR') nuevoEstado = 'cancelada';
+        await updateReservaEstado(reservaId, nuevoEstado);
+        console.log('✅ Reserva actualizada por webhook:', { 
+          reservaId, 
+          nuevoEstado, 
+          action,
+          messageSid,
+          telefono: cleanFrom
+        });
       } else {
-        console.log('ℹ️ No se detectó acción válida en el mensaje');
+        console.log('❌ No se pudo asociar la respuesta a una reserva.', { 
+          from: cleanFrom, 
+          action, 
+          messageSid 
+        });
       }
     } else {
-      console.log('ℹ️ No se encontró mensaje en el payload');
+      console.log('ℹ️ No se detectó acción válida en el mensaje');
     }
 
-    return NextResponse.json({ ok: true });
+    // Twilio espera una respuesta TwiML o 200 OK
+    // Respondemos con TwiML vacío para indicar que procesamos el mensaje
+    return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/xml' },
+    });
   } catch (e) {
     console.error('❌ Error webhook:', e);
-    return NextResponse.json({ ok: true }); // responder 200 siempre para evitar reintentos excesivos
+    // Siempre responder 200 para evitar reintentos excesivos de Twilio
+    return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/xml' },
+    });
   }
 }
 
