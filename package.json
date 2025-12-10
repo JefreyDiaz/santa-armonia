@@ -14,7 +14,7 @@
     "bcrypt": "^6.0.0",
     "framer-motion": "^12.23.6",
     "jsonwebtoken": "^9.0.2",
-    "next": "15.4.2",
+    "next": "15.4.8",
     "pg": "^8.13.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
