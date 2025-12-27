@@ -536,17 +536,7 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
           }}></div>
           <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Disponible</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <div style={{ 
-            width: '12px', 
-            height: '12px', 
-            backgroundColor: '#f1f5f9', 
-            borderRadius: '3px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}></div>
-          <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Verificando...</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ 
             width: '12px', 
             height: '12px', 
@@ -555,26 +545,6 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}></div>
           <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Sin horarios disponibles</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <div style={{ 
-              width: '12px', 
-              height: '12px', 
-            backgroundColor: 'var(--spa-light)', 
-            borderRadius: '3px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}></div>
-          <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Fecha pasada</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ 
-              width: '12px', 
-              height: '12px', 
-            backgroundColor: 'var(--spa-primary)', 
-            borderRadius: '3px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}></div>
-          <span style={{ fontFamily: 'Montserrat, sans-serif' }}>Seleccionada</span>
         </div>
       </div>
     </div>

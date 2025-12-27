@@ -1,1 +1,302 @@
-{"version":3,"caseSensitive":false,"basePath":"","rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"redirects":[{"source":"/:path+/","destination":"/:path+","permanent":true,"internal":true,"regex":"^(?:\\/((?:[^\\/]+?)(?:\\/(?:[^\\/]+?))*))\\/$"}],"headers":[]}
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/admin/recordatorios",
+      "regex": "^/admin/recordatorios(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/recordatorios(?:/)?$"
+    },
+    {
+      "page": "/api/auth/create-admin",
+      "regex": "^/api/auth/create\\-admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/create\\-admin(?:/)?$"
+    },
+    {
+      "page": "/api/auth/login",
+      "regex": "^/api/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/login(?:/)?$"
+    },
+    {
+      "page": "/api/auth/logout",
+      "regex": "^/api/auth/logout(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/logout(?:/)?$"
+    },
+    {
+      "page": "/api/auth/verify",
+      "regex": "^/api/auth/verify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/verify(?:/)?$"
+    },
+    {
+      "page": "/api/clear-recordatorios",
+      "regex": "^/api/clear\\-recordatorios(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/clear\\-recordatorios(?:/)?$"
+    },
+    {
+      "page": "/api/cron/recordatorios",
+      "regex": "^/api/cron/recordatorios(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/cron/recordatorios(?:/)?$"
+    },
+    {
+      "page": "/api/debug-reservas",
+      "regex": "^/api/debug\\-reservas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/debug\\-reservas(?:/)?$"
+    },
+    {
+      "page": "/api/fechas-ocupadas",
+      "regex": "^/api/fechas\\-ocupadas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/fechas\\-ocupadas(?:/)?$"
+    },
+    {
+      "page": "/api/feriados",
+      "regex": "^/api/feriados(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/feriados(?:/)?$"
+    },
+    {
+      "page": "/api/horarios",
+      "regex": "^/api/horarios(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/horarios(?:/)?$"
+    },
+    {
+      "page": "/api/init-db",
+      "regex": "^/api/init\\-db(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/init\\-db(?:/)?$"
+    },
+    {
+      "page": "/api/resenas",
+      "regex": "^/api/resenas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/resenas(?:/)?$"
+    },
+    {
+      "page": "/api/reservar",
+      "regex": "^/api/reservar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/reservar(?:/)?$"
+    },
+    {
+      "page": "/api/reservas",
+      "regex": "^/api/reservas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/reservas(?:/)?$"
+    },
+    {
+      "page": "/api/reservas-mes",
+      "regex": "^/api/reservas\\-mes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/reservas\\-mes(?:/)?$"
+    },
+    {
+      "page": "/api/send-recordatorio",
+      "regex": "^/api/send\\-recordatorio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/send\\-recordatorio(?:/)?$"
+    },
+    {
+      "page": "/api/send-test-message",
+      "regex": "^/api/send\\-test\\-message(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/send\\-test\\-message(?:/)?$"
+    },
+    {
+      "page": "/api/simulate-whatsapp-response",
+      "regex": "^/api/simulate\\-whatsapp\\-response(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/simulate\\-whatsapp\\-response(?:/)?$"
+    },
+    {
+      "page": "/api/test",
+      "regex": "^/api/test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test(?:/)?$"
+    },
+    {
+      "page": "/api/test-auto-response",
+      "regex": "^/api/test\\-auto\\-response(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test\\-auto\\-response(?:/)?$"
+    },
+    {
+      "page": "/api/test-db",
+      "regex": "^/api/test\\-db(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test\\-db(?:/)?$"
+    },
+    {
+      "page": "/api/test-webhook",
+      "regex": "^/api/test\\-webhook(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test\\-webhook(?:/)?$"
+    },
+    {
+      "page": "/api/update-reserva-estado",
+      "regex": "^/api/update\\-reserva\\-estado(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/update\\-reserva\\-estado(?:/)?$"
+    },
+    {
+      "page": "/api/webhook-status",
+      "regex": "^/api/webhook\\-status(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/webhook\\-status(?:/)?$"
+    },
+    {
+      "page": "/api/whatsapp/recordatorio",
+      "regex": "^/api/whatsapp/recordatorio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/whatsapp/recordatorio(?:/)?$"
+    },
+    {
+      "page": "/api/whatsapp/send",
+      "regex": "^/api/whatsapp/send(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/whatsapp/send(?:/)?$"
+    },
+    {
+      "page": "/api/whatsapp/test-config",
+      "regex": "^/api/whatsapp/test\\-config(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/whatsapp/test\\-config(?:/)?$"
+    },
+    {
+      "page": "/api/whatsapp/test-send",
+      "regex": "^/api/whatsapp/test\\-send(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/whatsapp/test\\-send(?:/)?$"
+    },
+    {
+      "page": "/api/whatsapp/webhook",
+      "regex": "^/api/whatsapp/webhook(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/whatsapp/webhook(?:/)?$"
+    },
+    {
+      "page": "/icon.png",
+      "regex": "^/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/reservar",
+      "regex": "^/reservar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reservar(?:/)?$"
+    },
+    {
+      "page": "/services/corporales",
+      "regex": "^/services/corporales(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/services/corporales(?:/)?$"
+    },
+    {
+      "page": "/services/faciales",
+      "regex": "^/services/faciales(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/services/faciales(?:/)?$"
+    },
+    {
+      "page": "/services/otros",
+      "regex": "^/services/otros(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/services/otros(?:/)?$"
+    },
+    {
+      "page": "/setup",
+      "regex": "^/setup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/setup(?:/)?$"
+    },
+    {
+      "page": "/test-calendario",
+      "regex": "^/test\\-calendario(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-calendario(?:/)?$"
+    },
+    {
+      "page": "/test-db",
+      "regex": "^/test\\-db(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-db(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
