@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findReservaIdByMessageId, updateReservaEstado, initDatabase, getPool } from '@/lib/database';
+import { sendWhatsAppText } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -116,6 +117,27 @@ export async function POST(req: NextRequest) {
           messageSid,
           telefono: cleanFrom
         });
+
+        // Enviar respuesta automática al usuario
+        try {
+          let mensajeRespuesta = '';
+          if (action === 'CONFIRMAR') {
+            mensajeRespuesta = '✅ Recibimos tu confirmación. ¡Te esperamos! ✨';
+          } else if (action === 'CANCELAR') {
+            mensajeRespuesta = '✅ Recibimos tu cancelación. Si deseas reagendar, escríbenos al 315 727 4521 o ingresa a santaarmonia.com.';
+          }
+
+          if (mensajeRespuesta) {
+            await sendWhatsAppText({
+              to: cleanFrom,
+              body: mensajeRespuesta,
+            });
+            console.log('✅ Respuesta automática enviada:', mensajeRespuesta);
+          }
+        } catch (errorRespuesta) {
+          console.error('❌ Error enviando respuesta automática:', errorRespuesta);
+          // No fallar el webhook si falla el envío de respuesta
+        }
       } else {
         console.log('❌ No se pudo asociar la respuesta a una reserva.', { 
           from: cleanFrom, 
