@@ -19,16 +19,23 @@ function formatDateLocal(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+// Función para obtener la fecha de mañana
+function getTomorrowDate(): string {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return formatDateLocal(tomorrow);
+}
+
 // Función para enviar recordatorios
+// Si fechaEspecifica es undefined, busca reservas de mañana (para cron automático a las 6 PM)
 async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: string) {
   try {
-    const fechaTarget = fechaEspecifica || formatDateLocal(new Date());
-    console.log(`🔄 Iniciando envío de recordatorios para ${fechaTarget} (${horasAntes} horas antes)...`);
+    // Si no se especifica fecha, usar mañana (para recordatorios automáticos a las 6 PM del día anterior)
+    const fechaTarget = fechaEspecifica || getTomorrowDate();
+    console.log(`🔄 Iniciando envío de recordatorios para reservas del ${fechaTarget}...`);
     
     await initDatabase();
     const pool = getPool();
-    const ahora = new Date();
-    const ahoraMinutos = ahora.getHours() * 60 + ahora.getMinutes();
 
     // Buscar reservas del día especificado que necesiten recordatorio
     console.log(`🔍 Buscando reservas para fecha: ${fechaTarget}`);
@@ -82,19 +89,11 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
     const enviados: Array<{ id: number; nombre: string; horario: string }> = [];
     const errores: Array<{ id: number; error: string }> = [];
 
+    // Enviar recordatorio a TODAS las reservas del día especificado
+    // (Si es automático, será mañana; si es manual, será la fecha especificada)
     for (const reserva of reservas) {
-      const minutosHastaCita = parseTimeToMinutes(reserva.horario) - ahoraMinutos;
-      const ventanaRecordatorio = horasAntes * 60; // Convertir horas a minutos
-      
-      // Si se especifica una fecha, enviar a TODAS las reservas de ese día
-      // Si no se especifica fecha (automático), usar la ventana de tiempo
-      const debeEnviar = fechaEspecifica 
-        ? true // Enviar a todas las reservas de la fecha especificada
-        : (minutosHastaCita <= ventanaRecordatorio && minutosHastaCita > 60); // Ventana de tiempo para automático
-      
-      if (debeEnviar) {
-        try {
-          console.log(`📱 Enviando recordatorio a ${reserva.nombre} para ${reserva.horario}`);
+      try {
+        console.log(`📱 Enviando recordatorio a ${reserva.nombre} para ${reserva.fecha} a las ${reserva.horario}`);
           
           // Intentar usar plantilla si está disponible, sino usar mensaje libre
           const contentSidRecordatorio = process.env.TWILIO_CONTENT_SID_RECORDATORIO;
@@ -152,13 +151,12 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
             throw new Error('No se obtuvo ID del mensaje de WhatsApp');
           }
           
-        } catch (error) {
-          console.error(`❌ Error enviando recordatorio a ${reserva.nombre}:`, error);
-          errores.push({ 
-            id: reserva.id, 
-            error: error instanceof Error ? error.message : 'Error desconocido' 
-          });
-        }
+      } catch (error) {
+        console.error(`❌ Error enviando recordatorio a ${reserva.nombre}:`, error);
+        errores.push({ 
+          id: reserva.id, 
+          error: error instanceof Error ? error.message : 'Error desconocido' 
+        });
       }
     }
 
@@ -172,19 +170,11 @@ async function enviarRecordatorios(horasAntes: number = 2, fechaEspecifica?: str
 }
 
 // Endpoint GET para ejecutar recordatorios manualmente
+// Si no se especifica fecha, busca reservas de mañana (para cron automático)
 export async function GET(req: NextRequest) {
   try {
-    const horas = Number(req.nextUrl.searchParams.get('horas') || '2');
     const fecha = req.nextUrl.searchParams.get('fecha'); // Formato: YYYY-MM-DD
     
-    // Verificar que sea una hora válida (1-24 horas)
-    if (horas < 1 || horas > 24) {
-      return NextResponse.json(
-        { error: 'Las horas deben estar entre 1 y 24' },
-        { status: 400 }
-      );
-    }
-
     // Validar formato de fecha si se proporciona
     if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       return NextResponse.json(
@@ -193,16 +183,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const resultado = await enviarRecordatorios(horas, fecha || undefined);
+    const fechaTarget = fecha || undefined; // Si no se especifica, usa mañana (automático)
+    const resultado = await enviarRecordatorios(2, fechaTarget);
     
-    const mensaje = fecha 
-      ? `Recordatorios procesados para ${fecha}`
-      : `Recordatorios procesados para hoy`;
+    const fechaReserva = fechaTarget || getTomorrowDate();
+    const mensaje = `Recordatorios procesados para reservas del ${fechaReserva}`;
     
     return NextResponse.json({
       success: true,
       message: mensaje,
-      fecha: fecha || formatDateLocal(new Date()),
+      fechaReserva: fechaReserva,
+      fechaEnvio: formatDateLocal(new Date()),
       ...resultado,
       timestamp: new Date().toISOString()
     });
@@ -220,32 +211,36 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Endpoint POST para configurar recordatorios automáticos
+// Endpoint POST para ejecutar recordatorios (compatible con Vercel Cron)
+// Este endpoint se ejecuta automáticamente a las 6 PM todos los días
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { horas = 2, habilitar = true } = body;
+    const body = await req.json().catch(() => ({}));
+    const { fecha } = body;
     
-    // Aquí podrías guardar la configuración en la base de datos
-    // Por ahora solo ejecutamos los recordatorios
-    
-    if (habilitar) {
-      const resultado = await enviarRecordatorios(horas);
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Recordatorios automáticos configurados y ejecutados',
-        configuracion: { horas, habilitar },
-        ...resultado,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      return NextResponse.json({
-        success: true,
-        message: 'Recordatorios automáticos deshabilitados',
-        configuracion: { horas, habilitar }
-      });
+    // Validar formato de fecha si se proporciona
+    if (fecha && !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      return NextResponse.json(
+        { error: 'Formato de fecha inválido. Use YYYY-MM-DD' },
+        { status: 400 }
+      );
     }
+
+    // Si no se especifica fecha, usa mañana (automático para cron a las 6 PM)
+    const fechaTarget = fecha || undefined;
+    const resultado = await enviarRecordatorios(2, fechaTarget);
+    
+    const fechaReserva = fechaTarget || getTomorrowDate();
+    const mensaje = `Recordatorios automáticos ejecutados para reservas del ${fechaReserva}`;
+    
+    return NextResponse.json({
+      success: true,
+      message: mensaje,
+      fechaReserva: fechaReserva,
+      fechaEnvio: formatDateLocal(new Date()),
+      ...resultado,
+      timestamp: new Date().toISOString()
+    });
 
   } catch (error) {
     console.error('Error en POST recordatorios:', error);
