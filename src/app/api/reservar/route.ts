@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { crearReserva, verificarDisponibilidad, initDatabase } from '@/lib/database';
 import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp';
+import { sendOwnerNotification } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   console.log('\n🚀 ===== NUEVA RESERVA RECIBIDA =====');
@@ -117,12 +118,37 @@ export async function POST(request: NextRequest) {
       // No lanzamos el error para que la reserva se guarde igual
     }
 
+    // Enviar notificación por email a la dueña
+    console.log('\n📧 ===== ENVIANDO NOTIFICACIÓN A LA DUEÑA =====');
+    try {
+      const emailResult = await sendOwnerNotification({
+        nombre,
+        telefono,
+        tratamiento,
+        tratamientoPrecio,
+        fecha,
+        horario,
+        notas,
+        reservaId: reserva.id
+      });
+
+      if (emailResult.success) {
+        console.log('✅ Email de notificación enviado a la dueña');
+      } else {
+        console.warn('⚠️ No se pudo enviar email de notificación:', emailResult.error);
+      }
+    } catch (emailErr) {
+      console.error('❌ Error enviando email de notificación:', emailErr instanceof Error ? emailErr.message : String(emailErr));
+      // No lanzamos el error para que la reserva se guarde igual
+    }
+    console.log('📧 ===== FIN NOTIFICACIÓN EMAIL =====\n');
+
     console.log('✅ ===== RESERVA COMPLETADA =====\n');
     return NextResponse.json({
       success: true,
       message: 'Reserva creada exitosamente',
       reservaId: reserva.id,
-      emailSent: false
+      emailSent: true
     }, { status: 200 });
 
   } catch (error) {
