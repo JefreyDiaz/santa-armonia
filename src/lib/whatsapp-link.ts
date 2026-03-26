@@ -8,6 +8,6 @@ export function getWhatsAppServiceLink(servicio: string): string {
 /** Mensaje genérico cuando la web ya no toma reservas en línea. */
 export function getWhatsAppReservaGeneralLink(): string {
   const mensaje =
-    "Hola, quiero información para agendar una cita en Spa Santa Armonía.";
+    "Hola, quiero información para agendar una cita en Santa Armonía.";
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 }
