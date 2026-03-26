@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { getWhatsAppServiceLink } from '@/lib/whatsapp-link';
 
 const faciales = [
   {
@@ -446,8 +447,10 @@ export default function FacialesPage() {
                 )}
 
                 <div style={{ marginTop: 'auto', paddingTop: 'var(--spa-spacing-md)' }}>
-                  <Link
-                    href={`/reservar?seleccion=${encodeURIComponent(facial.nombre)}`}
+                  <a
+                    href={getWhatsAppServiceLink(facial.nombre)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{ textDecoration: 'none' }}
                   >
                     <button
@@ -473,9 +476,9 @@ export default function FacialesPage() {
                         e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
-                      Reservar {facial.nombre}
+                      Reservar por WhatsApp
                     </button>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -509,7 +512,12 @@ export default function FacialesPage() {
             Nuestras esteticistas expertas evaluarán tu piel y te recomendarán 
             el tratamiento facial más adecuado para tus necesidades específicas.
           </p>
-          <Link href="/reservar?seleccion=Valoración" style={{ textDecoration: 'none' }}>
+          <a
+            href={getWhatsAppServiceLink('Valoración de piel')}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
             <button
               style={{
                 background: 'var(--spa-gradient-primary)',
@@ -535,7 +543,7 @@ export default function FacialesPage() {
             >
               Evaluación de Piel Gratuita
             </button>
-          </Link>
+          </a>
         </div>
       </div>
     </main>

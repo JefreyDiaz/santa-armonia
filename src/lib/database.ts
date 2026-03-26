@@ -224,6 +224,7 @@ export async function crearReserva(reservaData: {
   fecha: string;
   horario: string;
   notas?: string;
+  estado?: 'confirmada' | 'cancelada' | 'reprogramar' | 'pendiente';
 }) {
   const pool = getPool();
   const client = await pool.connect();
@@ -262,10 +263,12 @@ export async function crearReserva(reservaData: {
 
     // Crear reserva con datos del tratamiento embebidos
     console.log('Creando reserva...');
+    const estadoReserva = reservaData.estado ?? 'confirmada';
+
     const reservaResult = await client.query(
       `INSERT INTO reservas 
-       (cliente_id, tratamiento_nombre, tratamiento_precio, tratamiento_duracion, tratamiento_categoria, fecha, horario, notas, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+       (cliente_id, tratamiento_nombre, tratamiento_precio, tratamiento_duracion, tratamiento_categoria, fecha, horario, notas, created_at, estado)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        RETURNING id`,
       [
         clienteId, 
@@ -276,7 +279,8 @@ export async function crearReserva(reservaData: {
         reservaData.fecha, 
         reservaData.horario, 
         reservaData.notas || '', 
-        createdAtBogota
+        createdAtBogota,
+        estadoReserva
       ]
     );
     

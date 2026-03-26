@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { getWhatsAppServiceLink } from '@/lib/whatsapp-link';
 
 // Servicios de depilación para el modal
 const serviciosDepilacion = [
@@ -155,9 +156,9 @@ export default function OtrosServiciosPage() {
     setShowModal(false);
   };
 
-  const handleSelectService = (servicio) => {
-    // Redirigir a la página de reserva con el servicio seleccionado
-    window.location.href = `/reservar?seleccion=${encodeURIComponent(servicio.nombre)}`;
+  const handleSelectService = (servicio: { nombre: string }) => {
+    const whatsappUrl = getWhatsAppServiceLink(servicio.nombre);
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -341,7 +342,7 @@ export default function OtrosServiciosPage() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              Reservar Depilación con Cera
+              Reservar por WhatsApp
             </button>
           </div>
         </div>
@@ -496,10 +497,12 @@ export default function OtrosServiciosPage() {
                 </div>
 
                 <div style={{ marginTop: 'auto', paddingTop: 'var(--spa-spacing-md)' }}>
-                  <Link
-                    href={`/reservar?seleccion=${encodeURIComponent(masaje.nombre)}`}
-                    style={{ textDecoration: 'none' }}
-                  >
+                <a
+                  href={getWhatsAppServiceLink(masaje.nombre)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
                     <button
                       style={{
                         width: '100%',
@@ -523,9 +526,9 @@ export default function OtrosServiciosPage() {
                         e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
-                      Reservar {masaje.nombre}
+                      Reservar por WhatsApp
                     </button>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -639,8 +642,10 @@ export default function OtrosServiciosPage() {
               </p>
               
               <div style={{ marginTop: 'auto' }}>
-                <Link
-                  href={`/reservar?seleccion=${encodeURIComponent(servicio.nombre)}`}
+                <a
+                  href={getWhatsAppServiceLink(servicio.nombre)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
                 >
                   <button
@@ -666,9 +671,9 @@ export default function OtrosServiciosPage() {
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    Reservar {servicio.nombre}
+                    Reservar por WhatsApp
                   </button>
-                </Link>
+                </a>
               </div>
             </div>
           ))}
@@ -738,8 +743,10 @@ export default function OtrosServiciosPage() {
           </p>
           
           <div style={{ textAlign: 'center' }}>
-            <Link
-              href={`/reservar?seleccion=${encodeURIComponent(sueroTerapia.nombre)}`}
+            <a
+              href={getWhatsAppServiceLink(sueroTerapia.nombre)}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ textDecoration: 'none' }}
             >
               <button
@@ -764,9 +771,9 @@ export default function OtrosServiciosPage() {
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                Reservar {sueroTerapia.nombre}
+                Reservar por WhatsApp
               </button>
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -797,7 +804,12 @@ export default function OtrosServiciosPage() {
             Nuestras especialistas te ayudarán a elegir el servicio perfecto 
             según tus necesidades y objetivos específicos.
           </p>
-          <Link href="/reservar?seleccion=Valoración" style={{ textDecoration: 'none' }}>
+          <a
+            href={getWhatsAppServiceLink('Valoración personalizada')}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
             <button
               style={{
                 background: 'var(--spa-gradient-primary)',
@@ -823,7 +835,7 @@ export default function OtrosServiciosPage() {
             >
               Consultar Disponibilidad
             </button>
-          </Link>
+          </a>
         </div>
       </div>
 

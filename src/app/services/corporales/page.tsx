@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { getWhatsAppServiceLink } from '@/lib/whatsapp-link';
 
 const tratamientosCorporales = [
   {
@@ -309,8 +310,10 @@ export default function CorporalesPage() {
                 </p>
 
                 <div style={{ marginTop: 'auto', paddingTop: 'var(--spa-spacing-md)' }}>
-                  <Link
-                    href={`/reservar?seleccion=${encodeURIComponent(tratamiento.nombre)}`}
+                  <a
+                    href={getWhatsAppServiceLink(tratamiento.nombre)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{ textDecoration: 'none' }}
                   >
                     <button
@@ -336,9 +339,9 @@ export default function CorporalesPage() {
                         e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
-                      Reservar {tratamiento.nombre}
+                      Reservar por WhatsApp
                     </button>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -374,7 +377,12 @@ export default function CorporalesPage() {
             Nuestras especialistas te ayudarán a elegir el tratamiento perfecto 
             según tus necesidades y objetivos específicos.
           </p>
-          <Link href="/reservar?seleccion=Valoración" style={{ textDecoration: 'none' }}>
+          <a
+            href={getWhatsAppServiceLink('Valoración personalizada')}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
             <button
               style={{
                 background: 'var(--spa-gradient-primary)',
@@ -400,7 +408,7 @@ export default function CorporalesPage() {
             >
               Consultar Disponibilidad
             </button>
-          </Link>
+          </a>
         </div>
       </div>
     </main>
