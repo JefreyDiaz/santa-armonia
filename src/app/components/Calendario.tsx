@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { obtenerHorariosPorFecha } from '@/lib/horarios-agenda';
 
 interface CalendarioProps {
   selectedDate: string;
@@ -8,7 +9,7 @@ interface CalendarioProps {
   categoria?: string; // Para verificar disponibilidad específica por categoría
 }
 
-export default function Calendario({ selectedDate, onDateSelect, categoria = 'masajes' }: CalendarioProps) {
+export default function Calendario({ selectedDate, onDateSelect, categoria = 'masajes' }: Readonly<CalendarioProps>) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [feriados, setFeriados] = useState<string[]>([]);
   const [fechasSinDisponibilidad, setFechasSinDisponibilidad] = useState<Set<string>>(new Set());
@@ -48,18 +49,7 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
         const horariosOcupados = data.horariosOcupados || [];
         
         // Generar todos los horarios posibles para esa fecha
-        const d = new Date(fecha + 'T00:00:00');
-        const dia = d.getDay();
-        let horariosPosibles: string[] = [];
-        
-        if (dia >= 1 && dia <= 5) { // L-V
-          horariosPosibles = [
-            ...generarRango('07:00', '12:00'),
-            ...generarRango('14:00', '18:00')
-          ];
-        } else if (dia === 6) { // Sábado
-          horariosPosibles = generarRango('07:00', '14:00');
-        }
+        const horariosPosibles = obtenerHorariosPorFecha(fecha);
         
         // Verificar si hay al menos un horario disponible
         const horariosDisponibles = horariosPosibles.filter(horario => 
@@ -72,24 +62,6 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
       console.error('Error al verificar disponibilidad:', error);
     }
     return false; // Por defecto, asumir que NO hay disponibilidad si hay error
-  }
-
-  // Función auxiliar para generar rangos de horarios
-  function generarRango(inicio: string, fin: string, pasoMin = 60): string[] {
-    const [hIni, mIni] = inicio.split(':').map(Number);
-    const [hFin, mFin] = fin.split(':').map(Number);
-    const res: string[] = [];
-    let t = new Date();
-    t.setHours(hIni, mIni, 0, 0);
-    const end = new Date();
-    end.setHours(hFin, mFin, 0, 0);
-    while (t.getTime() < end.getTime()) {
-      const h = String(t.getHours()).padStart(2, '0');
-      const m = String(t.getMinutes()).padStart(2, '0');
-      res.push(`${h}:${m}`);
-      t = new Date(t.getTime() + pasoMin * 60000);
-    }
-    return res;
   }
 
   // Función para verificar si un horario ya pasó
@@ -143,12 +115,7 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
       backgroundColor = 'var(--spa-light)';
       color = 'var(--spa-text-light)';
       cursor = 'not-allowed';
-    } else if (isNoLaboral) {
-      backgroundColor = '#f8d7da';
-      color = '#842029';
-      border = '1px solid #f5c2c7';
-      cursor = 'not-allowed';
-    } else if (isSinDisponibilidad) {
+    } else if (isNoLaboral || isSinDisponibilidad) {
       backgroundColor = '#f8d7da';
       color = '#842029';
       border = '1px solid #f5c2c7';
@@ -247,18 +214,6 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
         const fechasSinDisponibilidadSet = new Set<string>();
         const fechasConDisponibilidadSet = new Set<string>();
         
-        // Generar todos los horarios posibles
-        const generarRango = (inicio: string, fin: string) => {
-          const horarios = [];
-          const [hInicio, mInicio] = inicio.split(':').map(Number);
-          const [hFin, mFin] = fin.split(':').map(Number);
-          for (let h = hInicio; h <= hFin; h++) {
-            if (h === hFin && mInicio > mFin) break;
-            horarios.push(`${String(h).padStart(2, '0')}:00`);
-          }
-          return horarios;
-        };
-        
         // Agrupar reservas por fecha
         const reservasPorFecha: Record<string, any[]> = {};
         reservas.forEach((r: any) => {
@@ -273,8 +228,6 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
         for (let day = 1; day <= daysInMonth; day++) {
           const date = new Date(year, month - 1, day);
           const dateStr = formatDate(date);
-          const dia = date.getDay();
-          
           // Solo verificar fechas futuras que no sean domingos o feriados
           const today = new Date();
           today.setHours(0, 0, 0, 0);
@@ -284,22 +237,14 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
           if (isPast || isNoLaboral) continue;
           
           // Determinar horarios posibles según el día
-          let horariosPosibles: string[] = [];
-          if (dia >= 1 && dia <= 5) { // L-V
-            horariosPosibles = [
-              ...generarRango('07:00', '12:00'),
-              ...generarRango('14:00', '19:00')
-            ];
-          } else if (dia === 6) { // Sábado
-            horariosPosibles = generarRango('07:00', '15:00');
-          }
+          const horariosPosibles = obtenerHorariosPorFecha(dateStr);
           
           // Contar horarios ocupados para esta fecha
           const reservasDelDia = reservasPorFecha[dateStr] || [];
-          const horariosOcupados = reservasDelDia.map((r: any) => r.horario);
+          const horariosOcupados = new Set(reservasDelDia.map((r: any) => r.horario));
           
           // Si todos los horarios están ocupados, marcar como sin disponibilidad
-          const disponibles = horariosPosibles.filter(h => !horariosOcupados.includes(h));
+          const disponibles = horariosPosibles.filter(h => !horariosOcupados.has(h));
           
           if (disponibles.length === 0) {
             fechasSinDisponibilidadSet.add(dateStr);

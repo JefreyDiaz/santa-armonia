@@ -7,23 +7,26 @@ import {
   ETIQUETA_CATEGORIA,
   textoPrecioCatalogo,
   getTratamientoById,
+  findTratamientoIdFromNombreGuardado,
   type CategoriaTratamiento,
+  formatNombreServicio,
 } from '@/lib/tratamientos';
-import { obtenerHorariosPorFecha } from '@/lib/horarios-agenda';
+import { formatHoraAmPm, obtenerHorariosPorFecha } from '@/lib/horarios-agenda';
 
 // Configuración para evitar prerendering
 export const dynamic = 'force-dynamic';
 
 interface Reserva {
   id: number;
+  cliente_id?: number;
   fecha: string;
   horario: string;
   estado: string;
   notas?: string;
   nombre: string;
   telefono: string;
-  email: string;
   tratamiento_nombre: string;
+  tratamiento_categoria?: string;
   precio: number;
   duracion: number;
   created_at: string;
@@ -39,6 +42,16 @@ export default function AdminPage() {
   const [user, setUser] = useState<{ id: number; username: string } | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [reservaSeleccionada, setReservaSeleccionada] = useState<Reserva | null>(null);
+  const [editandoDetalleReserva, setEditandoDetalleReserva] = useState(false);
+  const [guardandoDetalleReserva, setGuardandoDetalleReserva] = useState(false);
+  const [errorDetalleReserva, setErrorDetalleReserva] = useState('');
+  const [formDetalleEdicion, setFormDetalleEdicion] = useState({
+    nombre: '',
+    telefono: '',
+    categoria: 'otros' as CategoriaTratamiento,
+    tratamientoId: '',
+    precioManual: '',
+  });
   const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false);
   const [vistaAdmin, setVistaAdmin] = useState<'agenda' | 'listado'>('agenda');
   const [fechaAgenda, setFechaAgenda] = useState('');
@@ -49,15 +62,12 @@ export default function AdminPage() {
   const [formNueva, setFormNueva] = useState({
     nombre: '',
     telefono: '',
-    email: '',
     categoria: 'otros' as CategoriaTratamiento,
     tratamientoId: '',
     fecha: '',
     horario: '',
-    estado: 'confirmada' as 'confirmada' | 'pendiente',
     notas: '',
     precioManual: '',
-    omitirDisponibilidad: false,
   });
   const router = useRouter();
 
@@ -221,13 +231,109 @@ export default function AdminPage() {
 
   const abrirModal = (reserva: Reserva) => {
     setReservaSeleccionada(reserva);
+    setEditandoDetalleReserva(false);
+    setErrorDetalleReserva('');
+    const match = findTratamientoIdFromNombreGuardado(reserva.tratamiento_nombre);
+    const catFromDb = (reserva.tratamiento_categoria || '').toLowerCase() as CategoriaTratamiento;
+    const cat =
+      match?.categoria ||
+      (['faciales', 'corporales', 'otros'].includes(catFromDb) ? catFromDb : 'otros');
+    const tid = match?.id || '';
+    setFormDetalleEdicion({
+      nombre: reserva.nombre,
+      telefono: reserva.telefono,
+      categoria: cat,
+      tratamientoId: tid,
+      precioManual: reserva.precio > 0 ? String(reserva.precio) : '',
+    });
     setModalAbierto(true);
   };
 
   const cerrarModal = () => {
     setModalAbierto(false);
     setReservaSeleccionada(null);
+    setEditandoDetalleReserva(false);
+    setErrorDetalleReserva('');
   };
+
+  async function guardarDetalleReserva() {
+    if (!reservaSeleccionada) return;
+    setErrorDetalleReserva('');
+    if (!formDetalleEdicion.nombre.trim() || !formDetalleEdicion.telefono.trim()) {
+      setErrorDetalleReserva('Nombre y teléfono son obligatorios.');
+      return;
+    }
+    if (!formDetalleEdicion.tratamientoId) {
+      setErrorDetalleReserva('Elige un tratamiento.');
+      return;
+    }
+    const trat = getTratamientoById(formDetalleEdicion.tratamientoId);
+    if (!trat) {
+      setErrorDetalleReserva('Tratamiento no válido.');
+      return;
+    }
+    const necesitaPrecioManual = trat.precioEspecial != null || trat.precio === 0;
+    let precioManual: number | undefined;
+    if (necesitaPrecioManual) {
+      const raw = formDetalleEdicion.precioManual.trim();
+      if (raw === '') precioManual = 0;
+      else {
+        const n = Number(raw);
+        if (!Number.isFinite(n) || n < 0) {
+          setErrorDetalleReserva('Indica un precio válido (o 0).');
+          return;
+        }
+        precioManual = Math.round(n);
+      }
+    }
+
+    setGuardandoDetalleReserva(true);
+    try {
+      const res = await fetch('/api/admin/reserva-detalle', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          reservaId: reservaSeleccionada.id,
+          nombre: formDetalleEdicion.nombre.trim(),
+          telefono: formDetalleEdicion.telefono.trim(),
+          tratamientoId: formDetalleEdicion.tratamientoId,
+          precioManual: necesitaPrecioManual ? precioManual : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setErrorDetalleReserva(data.error || 'No se pudo guardar.');
+        return;
+      }
+      const r = await fetch('/api/reservas');
+      const list = await r.json();
+      if (list.success) {
+        setReservas(list.reservas);
+        const u = list.reservas.find((x: Reserva) => x.id === reservaSeleccionada.id);
+        if (u) {
+          setReservaSeleccionada(u);
+          const match2 = findTratamientoIdFromNombreGuardado(u.tratamiento_nombre);
+          const catFromDb2 = (u.tratamiento_categoria || '').toLowerCase() as CategoriaTratamiento;
+          const cat2 =
+            match2?.categoria ||
+            (['faciales', 'corporales', 'otros'].includes(catFromDb2) ? catFromDb2 : 'otros');
+          setFormDetalleEdicion({
+            nombre: u.nombre,
+            telefono: u.telefono,
+            categoria: cat2,
+            tratamientoId: match2?.id || '',
+            precioManual: u.precio > 0 ? String(u.precio) : '',
+          });
+        }
+      }
+      setEditandoDetalleReserva(false);
+    } catch {
+      setErrorDetalleReserva('Error de conexión.');
+    } finally {
+      setGuardandoDetalleReserva(false);
+    }
+  }
 
   const toggleMenuUsuario = () => {
     setMenuUsuarioAbierto(!menuUsuarioAbierto);
@@ -251,15 +357,12 @@ export default function AdminPage() {
     setFormNueva({
       nombre: '',
       telefono: '',
-      email: '',
       categoria: 'otros',
       tratamientoId: '',
       fecha: f,
       horario: horario || '',
-      estado: 'confirmada',
       notas: '',
       precioManual: '',
-      omitirDisponibilidad: false,
     });
     setModalNuevaReserva(true);
   };
@@ -309,14 +412,11 @@ export default function AdminPage() {
         body: JSON.stringify({
           nombre: formNueva.nombre.trim(),
           telefono: formNueva.telefono.trim(),
-          email: formNueva.email.trim(),
           tratamientoId: formNueva.tratamientoId,
           fecha: formNueva.fecha,
           horario: formNueva.horario,
-          estado: formNueva.estado,
           notas: formNueva.notas,
           precioManual: necesitaPrecioManual ? precioManual : undefined,
-          omitirDisponibilidad: formNueva.omitirDisponibilidad,
         }),
       });
       const data = await res.json();
@@ -357,8 +457,9 @@ export default function AdminPage() {
     if (!porHorario[r.horario]) porHorario[r.horario] = [];
     porHorario[r.horario].push(r);
   });
-  const slotsManana = slotsAgenda.filter((s) => Number.parseInt(s.split(':')[0], 10) < 14);
-  const slotsTarde = slotsAgenda.filter((s) => Number.parseInt(s.split(':')[0], 10) >= 14);
+  // UI: mostrar 13:00 y 13:30 junto a la tarde (1:00pm y 1:30pm)
+  const slotsManana = slotsAgenda.filter((s) => Number.parseInt(s.split(':')[0], 10) < 13);
+  const slotsTarde = slotsAgenda.filter((s) => Number.parseInt(s.split(':')[0], 10) >= 13);
 
   const tratamientoFormSeleccionado = formNueva.tratamientoId
     ? getTratamientoById(formNueva.tratamientoId)
@@ -735,6 +836,7 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {slots.map((hora) => {
                         const lista = porHorario[hora] || [];
+                        const listaVisible = lista.filter((r) => r.estado !== 'cancelada');
                         return (
                           <div
                             key={hora}
@@ -750,7 +852,7 @@ export default function AdminPage() {
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                marginBottom: lista.length ? '10px' : 0,
+                                marginBottom: listaVisible.length ? '10px' : 0,
                               }}
                             >
                               <span
@@ -760,7 +862,7 @@ export default function AdminPage() {
                                   fontFamily: 'Montserrat, sans-serif',
                                 }}
                               >
-                                {hora}
+                                {formatHoraAmPm(hora)}
                               </span>
                               <button
                                 type="button"
@@ -779,10 +881,10 @@ export default function AdminPage() {
                                 + Apuntar
                               </button>
                             </div>
-                            {lista.length === 0 ? (
+                            {listaVisible.length === 0 ? (
                               <div style={{ fontSize: '13px', color: 'var(--spa-text-secondary)' }}>Sin citas</div>
                             ) : (
-                              lista.map((r) => (
+                              listaVisible.map((r) => (
                                 <button
                                   key={r.id}
                                   type="button"
@@ -1042,9 +1144,6 @@ export default function AdminPage() {
                     <div style={{ color: 'var(--spa-text-primary)', fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>
                       {reserva.nombre}
                     </div>
-                    <div style={{ color: 'var(--spa-text-secondary)', fontSize: '12px', marginTop: '2px' }}>
-                      {reserva.email}
-                    </div>
                     <div style={{ color: 'var(--spa-text-secondary)', fontSize: '12px' }}>
                       📞 {reserva.telefono}
                     </div>
@@ -1066,7 +1165,7 @@ export default function AdminPage() {
                     </div>
                   </td>
                   <td style={{ padding: '15px', color: 'var(--spa-text-primary)', fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>
-                    {reserva.horario}
+                    {formatHoraAmPm(reserva.horario)}
                   </td>
                   <td style={{ padding: '15px', color: 'var(--spa-text-primary)', fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>
                     ${reserva.precio?.toLocaleString('es-CO') || 'N/A'}
@@ -1174,7 +1273,7 @@ export default function AdminPage() {
                     alignItems: 'center',
                     gap: '5px'
                   }}>
-                    📅 {reserva.fecha} - 🕐 {reserva.horario}
+                    📅 {reserva.fecha} - 🕐 {formatHoraAmPm(reserva.horario)}
                   </div>
                 </div>
                 <div style={{
@@ -1306,6 +1405,22 @@ export default function AdminPage() {
                 </button>
               </div>
 
+              {errorDetalleReserva && (
+                <div
+                  style={{
+                    marginBottom: '14px',
+                    padding: '10px 12px',
+                    background: 'rgba(220, 53, 69, 0.1)',
+                    border: '1px solid var(--spa-error)',
+                    borderRadius: '8px',
+                    color: 'var(--spa-error)',
+                    fontSize: '13px',
+                  }}
+                >
+                  {errorDetalleReserva}
+                </div>
+              )}
+
               <div style={{ marginBottom: '20px' }}>
                 <h3 style={{
                   color: 'var(--spa-text-primary)',
@@ -1321,12 +1436,57 @@ export default function AdminPage() {
                   borderRadius: 'var(--spa-border-radius-small)',
                   marginBottom: '15px'
                 }}>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Nombre:</strong> {reservaSeleccionada.nombre}
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>📞 Teléfono:</strong> {reservaSeleccionada.telefono}
-                  </div>
+                  {editandoDetalleReserva ? (
+                    <>
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
+                          Nombre
+                        </label>
+                        <input
+                          value={formDetalleEdicion.nombre}
+                          onChange={(e) =>
+                            setFormDetalleEdicion((f) => ({ ...f, nombre: e.target.value }))
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--spa-border-color)',
+                            fontFamily: 'Montserrat, sans-serif',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
+                          Teléfono
+                        </label>
+                        <input
+                          value={formDetalleEdicion.telefono}
+                          onChange={(e) =>
+                            setFormDetalleEdicion((f) => ({ ...f, telefono: e.target.value }))
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--spa-border-color)',
+                            fontFamily: 'Montserrat, sans-serif',
+                            boxSizing: 'border-box',
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Nombre:</strong> {reservaSeleccionada.nombre}
+                      </div>
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>📞 Teléfono:</strong> {reservaSeleccionada.telefono}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -1345,15 +1505,104 @@ export default function AdminPage() {
                   borderRadius: 'var(--spa-border-radius-small)',
                   marginBottom: '15px'
                 }}>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>Tratamiento:</strong> {reservaSeleccionada.tratamiento_nombre}
-                  </div>
-                  <div style={{ marginBottom: '8px' }}>
-                    <strong>⏱️ Duración:</strong> {reservaSeleccionada.duracion} minutos
-                  </div>
-                  <div>
-                    <strong>💰 Precio:</strong> ${reservaSeleccionada.precio.toLocaleString('es-CO')}
-                  </div>
+                  {editandoDetalleReserva ? (
+                    <>
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
+                          Categoría
+                        </label>
+                        <select
+                          value={formDetalleEdicion.categoria}
+                          onChange={(e) =>
+                            setFormDetalleEdicion((f) => ({
+                              ...f,
+                              categoria: e.target.value as CategoriaTratamiento,
+                              tratamientoId: '',
+                            }))
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--spa-border-color)',
+                            fontFamily: 'Montserrat, sans-serif',
+                          }}
+                        >
+                          {(Object.keys(TRATAMIENTOS) as CategoriaTratamiento[]).map((c) => (
+                            <option key={c} value={c}>
+                              {ETIQUETA_CATEGORIA[c]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div style={{ marginBottom: '10px' }}>
+                        <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
+                          Tratamiento
+                        </label>
+                        <select
+                          value={formDetalleEdicion.tratamientoId}
+                          onChange={(e) =>
+                            setFormDetalleEdicion((f) => ({ ...f, tratamientoId: e.target.value }))
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--spa-border-color)',
+                            fontFamily: 'Montserrat, sans-serif',
+                          }}
+                        >
+                          <option value="">Selecciona…</option>
+                          {TRATAMIENTOS[formDetalleEdicion.categoria].map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {formatNombreServicio(t.nombre)} — {textoPrecioCatalogo(t)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {(() => {
+                        const ts = formDetalleEdicion.tratamientoId
+                          ? getTratamientoById(formDetalleEdicion.tratamientoId)
+                          : null;
+                        const need = ts && (ts.precioEspecial != null || ts.precio === 0);
+                        return need ? (
+                          <div style={{ marginBottom: '8px' }}>
+                            <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
+                              Precio acordado (COP)
+                            </label>
+                            <input
+                              value={formDetalleEdicion.precioManual}
+                              onChange={(e) =>
+                                setFormDetalleEdicion((f) => ({ ...f, precioManual: e.target.value }))
+                              }
+                              placeholder="0 si aplica"
+                              style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid var(--spa-border-color)',
+                                fontFamily: 'Montserrat, sans-serif',
+                                boxSizing: 'border-box',
+                              }}
+                            />
+                          </div>
+                        ) : null;
+                      })()}
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>Tratamiento:</strong>{' '}
+                        {formatNombreServicio(reservaSeleccionada.tratamiento_nombre)}
+                      </div>
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong>⏱️ Duración:</strong> {reservaSeleccionada.duracion} minutos
+                      </div>
+                      <div>
+                        <strong>💰 Precio:</strong> ${reservaSeleccionada.precio.toLocaleString('es-CO')}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -1374,9 +1623,19 @@ export default function AdminPage() {
                 }}>
                   <div style={{ marginBottom: '8px' }}>
                     <strong>📅 Fecha:</strong> {reservaSeleccionada.fecha}
+                    {editandoDetalleReserva && (
+                      <span style={{ fontSize: '12px', color: 'var(--spa-text-secondary)', marginLeft: '8px' }}>
+                        (no editable)
+                      </span>
+                    )}
                   </div>
                   <div style={{ marginBottom: '8px' }}>
-                    <strong>🕐 Horario:</strong> {reservaSeleccionada.horario}
+                    <strong>🕐 Horario:</strong> {formatHoraAmPm(reservaSeleccionada.horario)}
+                    {editandoDetalleReserva && (
+                      <span style={{ fontSize: '12px', color: 'var(--spa-text-secondary)', marginLeft: '8px' }}>
+                        (no editable)
+                      </span>
+                    )}
                   </div>
                   <div>
                     <strong>📝 Estado:</strong> 
@@ -1428,66 +1687,127 @@ export default function AdminPage() {
                 paddingTop: '20px',
                 borderTop: '1px solid var(--spa-border-color)'
               }}>
-                <button
-                  onClick={() => {
-                    updateEstado(reservaSeleccionada.id, 'confirmada');
-                    cerrarModal();
-                  }}
-                  disabled={reservaSeleccionada.estado === 'confirmada'}
-                  style={{
-                    background: reservaSeleccionada.estado === 'confirmada' ? 'var(--spa-text-secondary)' : 'var(--spa-success)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: 'var(--spa-border-radius-small)',
-                    cursor: reservaSeleccionada.estado === 'confirmada' ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ✅ Confirmar
-                </button>
-                <button
-                  onClick={() => {
-                    updateEstado(reservaSeleccionada.id, 'pendiente');
-                    cerrarModal();
-                  }}
-                  disabled={reservaSeleccionada.estado === 'pendiente'}
-                  style={{
-                    background: reservaSeleccionada.estado === 'pendiente' ? 'var(--spa-text-secondary)' : 'var(--spa-warning)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: 'var(--spa-border-radius-small)',
-                    cursor: reservaSeleccionada.estado === 'pendiente' ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ⏳ Pendiente
-                </button>
-                <button
-                  onClick={() => {
-                    updateEstado(reservaSeleccionada.id, 'cancelada');
-                    cerrarModal();
-                  }}
-                  disabled={reservaSeleccionada.estado === 'cancelada'}
-                  style={{
-                    background: reservaSeleccionada.estado === 'cancelada' ? 'var(--spa-text-secondary)' : 'var(--spa-error)',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: 'var(--spa-border-radius-small)',
-                    cursor: reservaSeleccionada.estado === 'cancelada' ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontFamily: 'Montserrat, sans-serif',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  ❌ Cancelar
-                </button>
+                {editandoDetalleReserva ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={guardarDetalleReserva}
+                      disabled={guardandoDetalleReserva}
+                      style={{
+                        background: guardandoDetalleReserva ? 'var(--spa-text-secondary)' : 'var(--spa-primary)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: 'var(--spa-border-radius-small)',
+                        cursor: guardandoDetalleReserva ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {guardandoDetalleReserva ? 'Guardando…' : '💾 Guardar cambios'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditandoDetalleReserva(false);
+                        setErrorDetalleReserva('');
+                        const r = reservaSeleccionada;
+                        if (r) {
+                          const match = findTratamientoIdFromNombreGuardado(r.tratamiento_nombre);
+                          const catFromDb = (r.tratamiento_categoria || '').toLowerCase() as CategoriaTratamiento;
+                          const cat =
+                            match?.categoria ||
+                            (['faciales', 'corporales', 'otros'].includes(catFromDb) ? catFromDb : 'otros');
+                          setFormDetalleEdicion({
+                            nombre: r.nombre,
+                            telefono: r.telefono,
+                            categoria: cat,
+                            tratamientoId: match?.id || '',
+                            precioManual: r.precio > 0 ? String(r.precio) : '',
+                          });
+                        }
+                      }}
+                      disabled={guardandoDetalleReserva}
+                      style={{
+                        background: 'white',
+                        color: 'var(--spa-text-primary)',
+                        border: '1px solid var(--spa-border-color)',
+                        padding: '10px 20px',
+                        borderRadius: 'var(--spa-border-radius-small)',
+                        cursor: guardandoDetalleReserva ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Cancelar edición
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        updateEstado(reservaSeleccionada.id, 'confirmada');
+                        cerrarModal();
+                      }}
+                      disabled={reservaSeleccionada.estado === 'confirmada'}
+                      style={{
+                        background: reservaSeleccionada.estado === 'confirmada' ? 'var(--spa-text-secondary)' : 'var(--spa-success)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: 'var(--spa-border-radius-small)',
+                        cursor: reservaSeleccionada.estado === 'confirmada' ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ✅ Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditandoDetalleReserva(true);
+                        setErrorDetalleReserva('');
+                      }}
+                      style={{
+                        background: 'var(--spa-warning)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: 'var(--spa-border-radius-small)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ✏️ Editar datos
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateEstado(reservaSeleccionada.id, 'cancelada');
+                        cerrarModal();
+                      }}
+                      disabled={reservaSeleccionada.estado === 'cancelada'}
+                      style={{
+                        background: reservaSeleccionada.estado === 'cancelada' ? 'var(--spa-text-secondary)' : 'var(--spa-error)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: 'var(--spa-border-radius-small)',
+                        cursor: reservaSeleccionada.estado === 'cancelada' ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontFamily: 'Montserrat, sans-serif',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      ❌ Cancelar cita
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1615,24 +1935,6 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '13px' }}>
-                    Email (opcional)
-                  </label>
-                  <input
-                    type="email"
-                    value={formNueva.email}
-                    onChange={(e) => setFormNueva((f) => ({ ...f, email: e.target.value }))}
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--spa-border-color)',
-                      fontFamily: 'Montserrat, sans-serif',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '13px' }}>
                     Categoría
                   </label>
                   <select
@@ -1677,7 +1979,7 @@ export default function AdminPage() {
                     <option value="">Selecciona…</option>
                     {TRATAMIENTOS[formNueva.categoria].map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.nombre} — {t.duracion} min — {textoPrecioCatalogo(t)}
+                        {formatNombreServicio(t.nombre)} — {textoPrecioCatalogo(t)}
                       </option>
                     ))}
                   </select>
@@ -1743,37 +2045,13 @@ export default function AdminPage() {
                         const ocupado = horariosOcupadosModal.includes(h);
                         return (
                           <option key={h} value={h}>
-                            {h}
+                            {formatHoraAmPm(h)}
                             {ocupado ? ' (cupo lleno según reglas)' : ''}
                           </option>
                         );
                       })}
                     </select>
                   </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '13px' }}>
-                    Estado al guardar
-                  </label>
-                  <select
-                    value={formNueva.estado}
-                    onChange={(e) =>
-                      setFormNueva((f) => ({
-                        ...f,
-                        estado: e.target.value as 'confirmada' | 'pendiente',
-                      }))
-                    }
-                    style={{
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--spa-border-color)',
-                      fontFamily: 'Montserrat, sans-serif',
-                    }}
-                  >
-                    <option value="confirmada">Confirmada (cuenta para cupos)</option>
-                    <option value="pendiente">Pendiente (no bloquea cupos)</option>
-                  </select>
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '13px' }}>
@@ -1794,25 +2072,6 @@ export default function AdminPage() {
                     }}
                   />
                 </div>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    color: 'var(--spa-text-secondary)',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={formNueva.omitirDisponibilidad}
-                    onChange={(e) =>
-                      setFormNueva((f) => ({ ...f, omitirDisponibilidad: e.target.checked }))
-                    }
-                  />
-                  Omitir comprobación de cupos (solo si la agenda debe permitir dos citas en el mismo hueco)
-                </label>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
                   <button
                     type="button"

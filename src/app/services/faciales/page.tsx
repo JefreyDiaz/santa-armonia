@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getWhatsAppServiceLink } from '@/lib/whatsapp-link';
+import { formatNombreServicio } from '@/lib/tratamientos';
 
 const faciales = [
   {
@@ -181,8 +182,62 @@ const faciales = [
       'Definición del contorno'
     ]
   },
-   
-  
+  {
+    id: 'tensamax-facial',
+    nombre: 'Tensamax facial',
+    precio: 0,
+    duracion: 60,
+    descripcion: 'Tratamiento facial con protocolo Tensamax según indicación.',
+    beneficios: [
+      'Protocolo adaptado a tu tipo de piel',
+      'Complementa otros tratamientos faciales',
+    ],
+    imagen: '/images/Servicios/Facial/WIL_5066.jpg',
+    incluye: ['Valoración', 'Aplicación según protocolo Tensamax'],
+    precioEspecial: 'Por definir',
+  },
+  {
+    id: 'hidratacion-facial',
+    nombre: 'Hidratación facial',
+    precio: 0,
+    duracion: 60,
+    descripcion: 'Hidratación profunda para devolver confort y luminosidad al rostro.',
+    beneficios: [
+      'Mejora la sensación de confort',
+      'Aporta luminosidad',
+    ],
+    imagen: '/images/Servicios/Facial/WIL_5059.jpg',
+    incluye: ['Limpieza suave', 'Principios hidratantes', 'Protección final'],
+    precioEspecial: 'Por definir',
+  },
+  {
+    id: 'peeling',
+    nombre: 'Peeling',
+    precio: 0,
+    duracion: 60,
+    descripcion: 'Exfoliación facial según tipo de piel y objetivo, definido en valoración.',
+    beneficios: [
+      'Renueva la superficie de la piel',
+      'Mejora textura y luminosidad',
+    ],
+    imagen: '/images/Servicios/Facial/antimanchas.jpg',
+    incluye: ['Evaluación', 'Peeling según indicación', 'Cuidados post'],
+    precioEspecial: 'Por definir',
+  },
+  {
+    id: 'microdermoabrasion',
+    nombre: 'Microdermoabrasión',
+    precio: 0,
+    duracion: 60,
+    descripcion: 'Renovación superficial de la piel para mejorar textura y luminosidad.',
+    beneficios: [
+      'Exfoliación mecánica controlada',
+      'Piel más uniforme al tacto',
+    ],
+    imagen: '/images/Servicios/Facial/_MG_0024.jpg',
+    incluye: ['Preparación de la piel', 'Microdermoabrasión', 'Calmante e hidratación'],
+    precioEspecial: 'Por definir',
+  },
 ];
 
 export default function FacialesPage() {
@@ -320,7 +375,7 @@ export default function FacialesPage() {
                     fontFamily: 'Montserrat, sans-serif',
                     fontWeight: '600',
                   }}>
-                    {facial.nombre}
+                    {formatNombreServicio(facial.nombre)}
                   </h2>
                   <span style={{
                     color: 'var(--spa-primary)',
@@ -341,19 +396,7 @@ export default function FacialesPage() {
                   {facial.descripcion}
                 </p>
 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 'var(--spa-spacing-md)',
-                }}>
-                  <span style={{
-                    color: 'var(--spa-text-light)',
-                    fontSize: '0.9rem',
-                  }}>
-                    ⏱️ {facial.duracion} minutos
-                  </span>
-                </div>
+                <div style={{ height: 'var(--spa-spacing-md)' }} />
 
                 <div style={{ marginBottom: 'var(--spa-spacing-md)' }}>
                   <h3 style={{
@@ -448,7 +491,7 @@ export default function FacialesPage() {
 
                 <div style={{ marginTop: 'auto', paddingTop: 'var(--spa-spacing-md)' }}>
                   <a
-                    href={getWhatsAppServiceLink(facial.nombre)}
+                    href={getWhatsAppServiceLink(formatNombreServicio(facial.nombre))}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'none' }}

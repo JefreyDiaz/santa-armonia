@@ -53,6 +53,12 @@
       "namedRegex": "^/admin/recordatorios(?:/)?$"
     },
     {
+      "page": "/api/admin/reserva-detalle",
+      "regex": "^/api/admin/reserva\\-detalle(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/reserva\\-detalle(?:/)?$"
+    },
+    {
       "page": "/api/admin/reservas",
       "regex": "^/api/admin/reservas(?:/)?$",
       "routeKeys": {},

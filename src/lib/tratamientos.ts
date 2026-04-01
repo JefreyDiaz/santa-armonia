@@ -26,6 +26,9 @@ export const TRATAMIENTOS: Record<CategoriaTratamiento, TratamientoDef[]> = {
     { id: 'masajes-moldeadores', nombre: 'Masajes Moldeadores', precio: 750000, duracion: 720, descripcion: 'Tratamiento especializado para moldear y tonificar el cuerpo, ideal para personas con poco tejido graso que buscan definir su figura. Paquete de 12 sesiones.' },
     { id: 'levantamiento-gluteos', nombre: 'Levantamiento de Glúteos', precio: 950000, duracion: 600, descripcion: 'Tratamiento completo especializado para levantar, tonificar y dar forma a los glúteos mediante técnicas avanzadas. Paquete de 10 sesiones.' },
     { id: 'tratamiento-anticelulitis', nombre: 'Tratamiento Anticelulitis', precio: 800000, duracion: 600, descripcion: 'Tratamiento especializado para combatir la celulitis mediante técnicas de drenaje linfático y electroestimulación. Paquete de 10 sesiones.' },
+    { id: 'tensamax-corporal', nombre: 'Tensamax', precio: 0, duracion: 60, descripcion: 'Tratamiento corporal con protocolo Tensamax según indicación.', precioEspecial: 'Por definir' },
+    { id: 'quemador-de-grasa', nombre: 'Quemador de grasa', precio: 0, duracion: 60, descripcion: 'Sesión focalizada en complemento reductor y modelado.', precioEspecial: 'Por definir' },
+    { id: 'sesion-masaje-moldeador', nombre: 'Sesión de masaje moldeador', precio: 0, duracion: 60, descripcion: 'Sesión individual de masaje moldeador para tonificar y definir.', precioEspecial: 'Por definir' },
   ],
   otros: [
     { id: 'depilacion-cejas', nombre: 'Depilación de Cejas', precio: 15000, duracion: 30, descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.' },
@@ -55,6 +58,10 @@ export const TRATAMIENTOS: Record<CategoriaTratamiento, TratamientoDef[]> = {
     { id: 'tratamiento-anti-acne', nombre: 'TRATAMIENTO ANTI ACNÉ', precio: 110000, duracion: 45, descripcion: 'Tratamiento basado en la aplicación de diferentes principios activos para mejorar los diferentes tipos de acné y prevenir su proliferación' },
     { id: 'tratamiento-anti-edad', nombre: 'TRATAMIENTO ANTI EDAD', precio: 130000, duracion: 45, descripcion: 'Tratamiento basado en la aplicación de diferentes principios activos indicados para mejorar los signos de envejimiento de la piel' },
     { id: 'relleno-labios', nombre: 'RELLENO DE LABIOS CON ÁCIDO HIALURÓNICO', precio: 750000, duracion: 60, descripcion: 'Procedimiento no quirúrgico que se realiza mediante la inyección de ácido hialurónico, sustancia segura y reabsorbible' },
+    { id: 'tensamax-facial', nombre: 'Tensamax facial', precio: 0, duracion: 60, descripcion: 'Tratamiento facial con protocolo Tensamax según indicación.', precioEspecial: 'Por definir' },
+    { id: 'hidratacion-facial', nombre: 'Hidratación facial', precio: 0, duracion: 60, descripcion: 'Hidratación profunda para devolver confort y luminosidad al rostro.', precioEspecial: 'Por definir' },
+    { id: 'peeling', nombre: 'Peeling', precio: 0, duracion: 60, descripcion: 'Exfoliación facial según tipo de piel y objetivo, definido en valoración.', precioEspecial: 'Por definir' },
+    { id: 'microdermoabrasion', nombre: 'Microdermoabrasión', precio: 0, duracion: 60, descripcion: 'Renovación superficial de la piel para mejorar textura y luminosidad.', precioEspecial: 'Por definir' },
   ],
 };
 
@@ -68,7 +75,37 @@ export function getTratamientoById(id: string): TratamientoConCategoria | null {
   return null;
 }
 
+/** Coincide nombre guardado en BD con el catálogo (mayúsculas/formato distinto). */
+export function findTratamientoIdFromNombreGuardado(nombreDb: string): {
+  id: string;
+  categoria: CategoriaTratamiento;
+} | null {
+  const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+  const target = norm(nombreDb || '');
+  if (!target) return null;
+  for (const categoria of CATEGORIAS_TRATAMIENTO) {
+    for (const t of TRATAMIENTOS[categoria]) {
+      if (norm(t.nombre) === target || norm(formatNombreServicio(t.nombre)) === target) {
+        return { id: t.id, categoria };
+      }
+    }
+  }
+  return null;
+}
+
 export function textoPrecioCatalogo(t: TratamientoDef): string {
   if (t.precioEspecial) return t.precioEspecial;
   return `$${t.precio.toLocaleString('es-CO')}`;
+}
+
+export function formatNombreServicio(nombre: string): string {
+  if (!nombre) return nombre;
+  const tokens = nombre.trim().split(/\s+/g);
+  const mapped = tokens.map((tok) => {
+    // Mantener tokens con números (ej. 3D) tal cual
+    if (/\d/.test(tok)) return tok;
+    const lower = tok.toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  });
+  return mapped.join(' ');
 }

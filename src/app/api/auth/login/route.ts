@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buscarUsuario } from '@/lib/database';
 import { verifyPassword, generateToken, validateUsername, validatePassword } from '@/lib/auth';
 
+function getCookieDomain(request: NextRequest): string | undefined {
+  const host = request.headers.get('host') || '';
+  const hostname = host.split(':')[0].toLowerCase();
+  if (!hostname) return undefined;
+
+  // Compartir cookie entre www y dominio raíz para el dominio productivo
+  if (hostname === 'santaarmonia.com' || hostname.endsWith('.santaarmonia.com')) {
+    return '.santaarmonia.com';
+  }
+
+  // En localhost / preview / vercel.app no forzar domain
+  return undefined;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -74,9 +88,10 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 horas en segundos
-      path: '/'
+      path: '/',
+      domain: getCookieDomain(request),
     });
 
     return response;

@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { obtenerHorariosPorFechaConBuffer, obtenerSlotsOcupadosParaRango, SLOT_MINUTOS } from '@/lib/horarios-agenda';
 
 // Pool de conexiones PostgreSQL
 let pool: Pool | null = null;
@@ -304,41 +305,83 @@ export async function crearReserva(reservaData: {
 export async function verificarDisponibilidad(
   fecha: string,
   horario: string,
-  tratamientoCategoria: string
+  tratamientoCategoria: string,
+  tratamientoDuracion: number,
+  excluirReservaId?: number
 ): Promise<boolean> {
   try {
-    console.log('Verificando disponibilidad:', fecha, horario, tratamientoCategoria);
+    console.log('Verificando disponibilidad:', fecha, horario, tratamientoCategoria, tratamientoDuracion);
     const pool = getPool();
 
     const categoria = (tratamientoCategoria || '').toLowerCase();
 
-    // Contabilizar reservas existentes en el mismo slot
-    const counts = await pool.query(
-      `SELECT 
-         COUNT(*) as total,
-         SUM(CASE WHEN tratamiento_categoria = 'faciales' THEN 1 ELSE 0 END) as faciales
-       FROM reservas
-       WHERE fecha = $1 AND horario = $2 AND estado = 'confirmada'`,
-      [fecha, horario]
-    );
+    const dur = Number(tratamientoDuracion) || SLOT_MINUTOS;
+    const requestedSlots = obtenerSlotsOcupadosParaRango(horario, dur);
 
-    const total = Number(counts.rows[0]?.total ?? 0);
-    const faciales = Number(counts.rows[0]?.faciales ?? 0);
-
-    const hour = Number.parseInt((horario || '00:00').split(':')[0], 10);
-    const isAfternoon = hour >= 14;
-
-    if (!isAfternoon) {
-      // Mañana: 1 cita total por horario
-      return total < 1;
+    // Validar que el inicio exista en la agenda y que no se salga del horario laboral
+    // Para validar solapes, permitimos 1 slot de buffer al final (p.ej. 19:00)
+    // sin que eso aparezca como opción de inicio en la UI.
+    const slotsDia = new Set(obtenerHorariosPorFechaConBuffer(fecha, 1));
+    if (!slotsDia.has(horario)) return false;
+    for (const s of requestedSlots) {
+      if (!slotsDia.has(s)) return false; // no permitir que una reserva “se salga” al cierre
     }
 
-    // Tarde: capacidad 2 total, no 2 faciales
-    if (categoria === 'faciales') {
-      if (faciales >= 1) return false;
-      return total < 2;
+    // Traer todas las reservas confirmadas del día y expandir a slots de 30 min
+    const result =
+      excluirReservaId != null
+        ? await pool.query(
+            `SELECT horario, tratamiento_categoria, tratamiento_duracion
+             FROM reservas
+             WHERE fecha = $1 AND estado = 'confirmada' AND id <> $2`,
+            [fecha, excluirReservaId]
+          )
+        : await pool.query(
+            `SELECT horario, tratamiento_categoria, tratamiento_duracion
+             FROM reservas
+             WHERE fecha = $1 AND estado = 'confirmada'`,
+            [fecha]
+          );
+
+    type Counts = { total: number; faciales: number; corporales: number; otros: number };
+    const bySlot: Record<string, Counts> = {};
+    const inc = (slot: string, cat: string) => {
+      if (!bySlot[slot]) bySlot[slot] = { total: 0, faciales: 0, corporales: 0, otros: 0 };
+      bySlot[slot].total += 1;
+      if (cat === 'faciales') bySlot[slot].faciales += 1;
+      if (cat === 'corporales') bySlot[slot].corporales += 1;
+      if (cat === 'otros') bySlot[slot].otros += 1;
+    };
+
+    for (const r of result.rows as Array<{ horario: string; tratamiento_categoria: string; tratamiento_duracion: number }>) {
+      const cat = (r.tratamiento_categoria || '').toLowerCase();
+      const durR = Number(r.tratamiento_duracion) || SLOT_MINUTOS;
+      const slotsR = obtenerSlotsOcupadosParaRango(r.horario, durR);
+      for (const s of slotsR) inc(s, cat);
     }
-    return total < 2;
+
+    // Evaluar reglas por CADA slot que ocuparía la reserva nueva
+    for (const slot of requestedSlots) {
+      const current = bySlot[slot] || { total: 0, faciales: 0, corporales: 0, otros: 0 };
+      const hour = Number.parseInt((slot || '00:00').split(':')[0], 10);
+      const isAfternoon = hour >= 14;
+
+      if (!isAfternoon) {
+        // Mañana: 1 cita total por slot
+        if (current.total >= 1) return false;
+        continue;
+      }
+
+      // Tarde: capacidad 2 total, no 2 faciales en el mismo slot
+      if (categoria === 'faciales') {
+        if (current.faciales >= 1) return false;
+        if (current.total >= 2) return false;
+      } else {
+        if (current.total >= 2) return false;
+      }
+    }
+
+    return true;
   } catch (error) {
     console.error('Error al verificar disponibilidad:', error);
     return false;
@@ -352,12 +395,14 @@ export async function getReservas(): Promise<any[]> {
     const result = await pool.query(`
       SELECT 
         r.id,
+        r.cliente_id,
         r.fecha,
         r.horario,
         r.estado,
         r.notas,
         r.created_at,
         r.tratamiento_nombre,
+        r.tratamiento_categoria,
         r.tratamiento_precio as precio,
         r.tratamiento_duracion as duracion,
         c.nombre,
@@ -406,6 +451,48 @@ export async function updateReservaEstado(reservaId: number, nuevoEstado: 'confi
     `UPDATE reservas SET estado = $1 WHERE id = $2`,
     [nuevoEstado, reservaId]
   );
+}
+
+export async function updateReservaClienteYTratamiento(params: {
+  reservaId: number;
+  clienteId: number;
+  nombre: string;
+  telefono: string;
+  tratamientoNombre: string;
+  tratamientoPrecio: number;
+  tratamientoDuracion: number;
+  tratamientoCategoria: string;
+}) {
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      `UPDATE clientes SET nombre = $1, telefono = $2 WHERE id = $3`,
+      [params.nombre.trim(), params.telefono.trim(), params.clienteId]
+    );
+    await client.query(
+      `UPDATE reservas
+       SET tratamiento_nombre = $1,
+           tratamiento_precio = $2,
+           tratamiento_duracion = $3,
+           tratamiento_categoria = $4
+       WHERE id = $5`,
+      [
+        params.tratamientoNombre,
+        params.tratamientoPrecio,
+        params.tratamientoDuracion,
+        params.tratamientoCategoria.toLowerCase(),
+        params.reservaId,
+      ]
+    );
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
 }
 
 // Obtiene lista de feriados cargados

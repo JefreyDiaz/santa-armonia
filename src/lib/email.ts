@@ -5,6 +5,7 @@
 */
 
 import { Resend } from 'resend';
+import { formatHoraAmPm } from '@/lib/horarios-agenda';
 
 function getEnv(name: string): string | undefined {
   return process.env[name];
@@ -63,6 +64,7 @@ export async function sendOwnerNotification(params: {
 
     // Crear contenido del email
     const emailSubject = `🎉 Nueva Reserva - ${params.nombre}`;
+    const horarioLabel = formatHoraAmPm(params.horario);
     
     const emailHtml = `
 <!DOCTYPE html>
@@ -166,7 +168,7 @@ export async function sendOwnerNotification(params: {
       </div>
       <div class="info-row">
         <span class="info-label">🕐 Horario:</span>
-        <span class="info-value"><strong>${params.horario}</strong></span>
+        <span class="info-value"><strong>${horarioLabel}</strong></span>
       </div>
       ${params.notas ? `
       <div class="info-row">
@@ -195,7 +197,7 @@ ID Reserva: #${params.reservaId}
 💆‍♀️ Tratamiento: ${params.tratamiento}
 💰 Precio: ${precioFormato}
 📅 Fecha: ${params.fecha}
-🕐 Horario: ${params.horario}
+🕐 Horario: ${horarioLabel}
 ${params.notas ? `📝 Notas: ${params.notas}` : ''}
 
 ✨ Spa Santa Armonía - Sistema de Reservas

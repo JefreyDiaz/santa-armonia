@@ -3,6 +3,7 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
   "/admin/recordatorios/page": "app/admin/recordatorios/page.js",
+  "/api/admin/reserva-detalle/route": "app/api/admin/reserva-detalle/route.js",
   "/api/admin/reservas/route": "app/api/admin/reservas/route.js",
   "/api/auth/create-admin/route": "app/api/auth/create-admin/route.js",
   "/api/auth/login/route": "app/api/auth/login/route.js",

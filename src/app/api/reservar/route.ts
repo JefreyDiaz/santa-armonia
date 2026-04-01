@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { crearReserva, verificarDisponibilidad, initDatabase } from '@/lib/database';
-import { sendWhatsAppText, sendWhatsAppTemplate } from '@/lib/whatsapp';
+import { sendWhatsAppTemplate } from '@/lib/whatsapp';
 import { sendOwnerNotification } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Verificar disponibilidad en tiempo real
-    const disponible = await verificarDisponibilidad(fecha, horario, tratamientoCategoria);
+    const disponible = await verificarDisponibilidad(fecha, horario, tratamientoCategoria, tratamientoDuracion);
     
     if (!disponible) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const reserva = await crearReserva({
       nombre,
       telefono,
-      email: '', // Email vacío ya que no se requiere
+      email: '',
       tratamiento,
       tratamientoPrecio,
       tratamientoDuracion,

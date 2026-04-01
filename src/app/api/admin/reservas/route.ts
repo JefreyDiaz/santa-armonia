@@ -25,14 +25,11 @@ export async function POST(request: NextRequest) {
     const {
       nombre,
       telefono,
-      email,
       tratamientoId,
       fecha,
       horario,
-      estado,
       notas,
       precioManual,
-      omitirDisponibilidad,
     } = body;
 
     if (!nombre || !telefono || !tratamientoId || !fecha || !horario) {
@@ -62,28 +59,22 @@ export async function POST(request: NextRequest) {
       precio = Math.round(n);
     }
 
-    const estadoFinal =
-      estado === 'pendiente' || estado === 'confirmada' ? estado : 'confirmada';
-
-    const omitir = Boolean(omitirDisponibilidad);
-    if (!omitir && estadoFinal === 'confirmada') {
-      const ok = await verificarDisponibilidad(fecha, horario, trat.categoria);
-      if (!ok) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              'Ese horario no tiene cupo según las reglas del spa. Marca "Omitir cupos" si debes registrarlo igual.',
-          },
-          { status: 409 }
-        );
-      }
-    }
+  // En agenda siempre se guarda como "confirmada" y siempre valida cupos
+  const ok = await verificarDisponibilidad(fecha, horario, trat.categoria, trat.duracion);
+  if (!ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Ese horario no tiene cupo según las reglas del spa.',
+      },
+      { status: 409 }
+    );
+  }
 
     const reserva = await crearReserva({
       nombre: String(nombre).trim(),
       telefono: String(telefono).trim(),
-      email: typeof email === 'string' ? email.trim() : '',
+    email: '',
       tratamiento: trat.nombre,
       tratamientoPrecio: precio,
       tratamientoDuracion: trat.duracion,
@@ -91,7 +82,7 @@ export async function POST(request: NextRequest) {
       fecha: String(fecha),
       horario: String(horario),
       notas: typeof notas === 'string' ? notas : '',
-      estado: estadoFinal,
+    estado: 'confirmada',
     });
 
     return NextResponse.json({

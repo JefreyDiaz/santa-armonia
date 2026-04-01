@@ -1,6 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+function getCookieDomain(request: NextRequest): string | undefined {
+  const host = request.headers.get('host') || '';
+  const hostname = host.split(':')[0].toLowerCase();
+  if (!hostname) return undefined;
+  if (hostname === 'santaarmonia.com' || hostname.endsWith('.santaarmonia.com')) {
+    return '.santaarmonia.com';
+  }
+  return undefined;
+}
+
+export async function POST(request: NextRequest) {
   try {
     // Crear respuesta de logout exitoso
     const response = NextResponse.json({
@@ -12,9 +22,10 @@ export async function POST() {
     response.cookies.set('auth-token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 0, // Expirar inmediatamente
-      path: '/'
+      path: '/',
+      domain: getCookieDomain(request),
     });
 
     return response;

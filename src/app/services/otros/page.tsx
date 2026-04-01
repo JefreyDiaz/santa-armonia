@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { getWhatsAppServiceLink } from '@/lib/whatsapp-link';
+import { formatNombreServicio } from '@/lib/tratamientos';
 
 // Servicios de depilación para el modal
 const serviciosDepilacion = [
@@ -157,7 +158,7 @@ export default function OtrosServiciosPage() {
   };
 
   const handleSelectService = (servicio: { nombre: string }) => {
-    const whatsappUrl = getWhatsAppServiceLink(servicio.nombre);
+    const whatsappUrl = getWhatsAppServiceLink(formatNombreServicio(servicio.nombre));
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -415,7 +416,7 @@ export default function OtrosServiciosPage() {
                     fontFamily: 'Montserrat, sans-serif',
                     fontWeight: '600',
                   }}>
-                    {masaje.nombre}
+                    {formatNombreServicio(masaje.nombre)}
                   </h3>
                   
                   {masaje.indicacion && (
@@ -435,12 +436,6 @@ export default function OtrosServiciosPage() {
                     alignItems: 'center',
                     marginBottom: 'var(--spa-spacing-sm)',
                   }}>
-                    <span style={{
-                      color: 'var(--spa-text-light)',
-                      fontSize: '0.9rem',
-                    }}>
-                      ⏱️ {masaje.duracion}
-                    </span>
                     <span style={{
                       color: 'var(--spa-primary)',
                       fontWeight: '700',
@@ -498,7 +493,7 @@ export default function OtrosServiciosPage() {
 
                 <div style={{ marginTop: 'auto', paddingTop: 'var(--spa-spacing-md)' }}>
                 <a
-                  href={getWhatsAppServiceLink(masaje.nombre)}
+                  href={getWhatsAppServiceLink(formatNombreServicio(masaje.nombre))}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
@@ -597,39 +592,16 @@ export default function OtrosServiciosPage() {
                 </p>
               )}
 
-              {servicio.duracion && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 'var(--spa-spacing-sm)',
-                }}>
-                  <span style={{
-                    color: 'var(--spa-text-light)',
-                    fontSize: '0.9rem',
-                  }}>
-                    ⏱️ {servicio.duracion}
-                  </span>
-                  <span style={{
-                    color: 'var(--spa-primary)',
-                    fontWeight: '700',
-                    fontSize: '1.2rem',
-                  }}>
-                    {servicio.precioEspecial || (servicio.precio > 0 ? `$${servicio.precio.toLocaleString('es-CO')}` : 'Sin costo')}
-                  </span>
-                </div>
-              )}
+              <p style={{
+                color: 'var(--spa-primary)',
+                fontWeight: '700',
+                fontSize: '1.2rem',
+                marginBottom: 'var(--spa-spacing-md)',
+              }}>
+                {servicio.precioEspecial || (servicio.precio && servicio.precio > 0 ? `$${servicio.precio.toLocaleString('es-CO')}` : 'Según valoración')}
+              </p>
 
-              {!servicio.duracion && (
-                <p style={{
-                  color: 'var(--spa-primary)',
-                  fontWeight: '700',
-                  fontSize: '1.2rem',
-                  marginBottom: 'var(--spa-spacing-md)',
-                }}>
-                  {servicio.precio}
-                </p>
-              )}
+              {/* duración removida del listado */}
               
               <p style={{
                 color: 'var(--spa-text-secondary)',
@@ -643,7 +615,7 @@ export default function OtrosServiciosPage() {
               
               <div style={{ marginTop: 'auto' }}>
                 <a
-                  href={getWhatsAppServiceLink(servicio.nombre)}
+                  href={getWhatsAppServiceLink(formatNombreServicio(servicio.nombre))}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: 'none' }}
@@ -960,7 +932,7 @@ export default function OtrosServiciosPage() {
                       margin: 0,
                       flex: 1,
                     }}>
-                      {servicio.nombre}
+                      {formatNombreServicio(servicio.nombre)}
                     </h3>
                     <span style={{
                       backgroundColor: servicio.colorCategoria,
@@ -990,15 +962,6 @@ export default function OtrosServiciosPage() {
                     alignItems: 'center',
                     marginBottom: 'var(--spa-spacing-md)',
                   }}>
-                    <span style={{
-                      color: 'var(--spa-text-light)',
-                      fontSize: '0.85rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}>
-                      ⏱️ {servicio.duracion}
-                    </span>
                     <span style={{
                       color: 'var(--spa-primary)',
                       fontWeight: '700',

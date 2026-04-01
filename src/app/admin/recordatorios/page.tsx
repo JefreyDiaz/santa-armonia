@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatHoraAmPm } from '@/lib/horarios-agenda';
 
 interface RecordatorioResult {
   enviados: Array<{ id: number; nombre: string; horario: string }>;
@@ -339,7 +340,7 @@ export default function RecordatoriosPage() {
                         fontSize: '14px',
                         fontFamily: 'Montserrat, sans-serif'
                       }}>
-                        <strong>{item.nombre}</strong> - Cita a las {item.horario}
+                        <strong>{item.nombre}</strong> - Cita a las {formatHoraAmPm(item.horario)}
                       </div>
                     ))}
                   </div>

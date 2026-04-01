@@ -1,13 +1,18 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { FaWhatsapp } from "react-icons/fa";
 
 import { getWhatsAppReservaGeneralLink } from "@/lib/whatsapp-link";
 
 export default function WhatsAppFloatingButton() {
+  const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
   const href = getWhatsAppReservaGeneralLink();
+
+  // Ocultar en /admin y cualquier subruta, y también en /login
+  if (pathname?.startsWith("/admin") || pathname === "/login") return null;
 
   return (
     <div

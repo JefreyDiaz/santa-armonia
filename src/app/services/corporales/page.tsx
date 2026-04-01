@@ -70,7 +70,40 @@ const tratamientosCorporales = [
     ],
     imagen: '/images/Servicios/masaje/WIL_5156.jpg',
     condiciones: 'Aplica condiciones y restricciones'
-  }
+  },
+  {
+    id: 'tensamax-corporal',
+    nombre: 'Tensamax',
+    paquete: '1 SESIÓN',
+    precio: 0,
+    precioEspecial: 'Por definir',
+    descripcion: 'Tratamiento corporal con protocolo Tensamax según indicación.',
+    incluye: ['Valoración y protocolo personalizado', 'Sesión según necesidad'],
+    imagen: '/images/Servicios/masaje/WIL_5213.jpg',
+    condiciones: 'Aplica condiciones y restricciones',
+  },
+  {
+    id: 'quemador-de-grasa',
+    nombre: 'Quemador de grasa',
+    paquete: '1 SESIÓN',
+    precio: 0,
+    precioEspecial: 'Por definir',
+    descripcion: 'Sesión focalizada en complemento reductor y modelado.',
+    incluye: ['Aplicación según protocolo', 'Recomendaciones de cuidado'],
+    imagen: '/images/Servicios/masaje/WIL_5194.jpg',
+    condiciones: 'Aplica condiciones y restricciones',
+  },
+  {
+    id: 'sesion-masaje-moldeador',
+    nombre: 'Sesión de masaje moldeador',
+    paquete: '1 SESIÓN',
+    precio: 0,
+    precioEspecial: 'Por definir',
+    descripcion: 'Sesión individual de masaje moldeador para tonificar y definir.',
+    incluye: ['Técnicas de moldeo manual', 'Complementos según indicación'],
+    imagen: '/images/Servicios/masaje/WIL_5181.jpg',
+    condiciones: 'Aplica condiciones y restricciones',
+  },
 ];
 
 // Las depilaciones corporales se movieron a /services/otros
@@ -250,7 +283,9 @@ export default function CorporalesPage() {
                       fontWeight: '700',
                       fontSize: '1.3rem',
                     }}>
-                      ${tratamiento.precio.toLocaleString('es-CO')}
+                      {'precioEspecial' in tratamiento && tratamiento.precioEspecial
+                        ? tratamiento.precioEspecial
+                        : `$${tratamiento.precio.toLocaleString('es-CO')}`}
                     </span>
                   </div>
                 </div>
