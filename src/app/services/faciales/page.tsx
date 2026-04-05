@@ -377,14 +377,6 @@ export default function FacialesPage() {
                   }}>
                     {formatNombreServicio(facial.nombre)}
                   </h2>
-                  <span style={{
-                    color: 'var(--spa-primary)',
-                    fontWeight: '600',
-                    fontSize: '1.3rem',
-                    display: 'block',
-                  }}>
-                    {facial.precioEspecial ? facial.precioEspecial : `$${facial.precio.toLocaleString('es-CO')}`}
-                  </span>
                 </div>
 
                 <p style={{

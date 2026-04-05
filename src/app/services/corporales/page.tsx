@@ -104,6 +104,17 @@ const tratamientosCorporales = [
     imagen: '/images/Servicios/masaje/WIL_5181.jpg',
     condiciones: 'Aplica condiciones y restricciones',
   },
+  {
+    id: 'masaje-postoperatorio',
+    nombre: 'Masaje postoperatorio',
+    paquete: '1 SESIÓN',
+    precio: 0,
+    precioEspecial: 'Por definir',
+    descripcion: 'Masaje terapéutico adaptado al periodo de recuperación tras un procedimiento, según valoración y autorización.',
+    incluye: ['Evaluación del caso', 'Protocolo según evolución y recomendación médica'],
+    imagen: '/images/Servicios/masaje/WIL_5156.jpg',
+    condiciones: 'Aplica condiciones y restricciones',
+  },
 ];
 
 // Las depilaciones corporales se movieron a /services/otros
@@ -265,27 +276,13 @@ export default function CorporalesPage() {
                     </p>
                   )}
                   
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--spa-spacing-sm)',
-                  }}>
+                  <div style={{ marginBottom: 'var(--spa-spacing-sm)' }}>
                     <span style={{
                       color: 'var(--spa-primary)',
                       fontWeight: '600',
                       fontSize: '1.1rem',
                     }}>
                       {tratamiento.paquete}
-                    </span>
-                    <span style={{
-                      color: 'var(--spa-primary)',
-                      fontWeight: '700',
-                      fontSize: '1.3rem',
-                    }}>
-                      {'precioEspecial' in tratamiento && tratamiento.precioEspecial
-                        ? tratamiento.precioEspecial
-                        : `$${tratamiento.precio.toLocaleString('es-CO')}`}
                     </span>
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   TRATAMIENTOS,
   ETIQUETA_CATEGORIA,
-  textoPrecioCatalogo,
+  duracionParaAgenda,
   getTratamientoById,
   findTratamientoIdFromNombreGuardado,
   type CategoriaTratamiento,
@@ -102,11 +102,13 @@ export default function AdminPage() {
       setHorariosOcupadosModal([]);
       return;
     }
+    const trat = formNueva.tratamientoId ? getTratamientoById(formNueva.tratamientoId) : null;
+    const duracionMinutos = trat ? duracionParaAgenda(trat) : 60;
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch(
-          `/api/horarios?fecha=${encodeURIComponent(formNueva.fecha)}&categoria=${encodeURIComponent(formNueva.categoria)}`
+          `/api/horarios?fecha=${encodeURIComponent(formNueva.fecha)}&categoria=${encodeURIComponent(formNueva.categoria)}&duracionMinutos=${duracionMinutos}`
         );
         const data = await res.json();
         if (!cancelled) setHorariosOcupadosModal(data.horariosOcupados || []);
@@ -117,7 +119,7 @@ export default function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [modalNuevaReserva, formNueva.fecha, formNueva.categoria]);
+  }, [modalNuevaReserva, formNueva.fecha, formNueva.categoria, formNueva.tratamientoId]);
 
   async function verifyAuth() {
     try {
@@ -786,8 +788,8 @@ export default function AdminPage() {
                 maxWidth: '720px',
               }}
             >
-              Apunta aquí las citas que coordinas por teléfono o WhatsApp. Los tratamientos y precios salen del mismo
-              catálogo del sitio; si el precio es &quot;según valoración&quot;, puedes indicar el monto al guardar.
+              Apunta aquí las citas que coordinas por teléfono o WhatsApp. Los tratamientos salen del catálogo del
+              sitio; cuando corresponda, indica el precio acordado en el campo que aparece al guardar.
             </p>
             {slotsAgenda.length === 0 ? (
               <div
@@ -1555,7 +1557,7 @@ export default function AdminPage() {
                           <option value="">Selecciona…</option>
                           {TRATAMIENTOS[formDetalleEdicion.categoria].map((t) => (
                             <option key={t.id} value={t.id}>
-                              {formatNombreServicio(t.nombre)} — {textoPrecioCatalogo(t)}
+                              {formatNombreServicio(t.nombre)}
                             </option>
                           ))}
                         </select>
@@ -1979,7 +1981,7 @@ export default function AdminPage() {
                     <option value="">Selecciona…</option>
                     {TRATAMIENTOS[formNueva.categoria].map((t) => (
                       <option key={t.id} value={t.id}>
-                        {formatNombreServicio(t.nombre)} — {textoPrecioCatalogo(t)}
+                        {formatNombreServicio(t.nombre)}
                       </option>
                     ))}
                   </select>

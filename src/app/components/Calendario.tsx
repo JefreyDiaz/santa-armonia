@@ -7,9 +7,16 @@ interface CalendarioProps {
   selectedDate: string;
   onDateSelect: (date: string) => void;
   categoria?: string; // Para verificar disponibilidad específica por categoría
+  /** Duración de la cita en minutos (debe coincidir con verificarDisponibilidad). Por defecto 60. */
+  duracionMinutos?: number;
 }
 
-export default function Calendario({ selectedDate, onDateSelect, categoria = 'masajes' }: Readonly<CalendarioProps>) {
+export default function Calendario({
+  selectedDate,
+  onDateSelect,
+  categoria = 'masajes',
+  duracionMinutos = 60,
+}: Readonly<CalendarioProps>) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [feriados, setFeriados] = useState<string[]>([]);
   const [fechasSinDisponibilidad, setFechasSinDisponibilidad] = useState<Set<string>>(new Set());
@@ -43,7 +50,9 @@ export default function Calendario({ selectedDate, onDateSelect, categoria = 'ma
   // Función para verificar si una fecha tiene horarios disponibles
   async function verificarDisponibilidadFecha(fecha: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/horarios?fecha=${fecha}&categoria=${categoria}`);
+      const response = await fetch(
+        `/api/horarios?fecha=${fecha}&categoria=${categoria}&duracionMinutos=${duracionMinutos}`
+      );
       if (response.ok) {
         const data = await response.json();
         const horariosOcupados = data.horariosOcupados || [];

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { crearReserva, initDatabase, verificarDisponibilidad } from '@/lib/database';
-import { getTratamientoById } from '@/lib/tratamientos';
+import { duracionParaAgenda, getTratamientoById } from '@/lib/tratamientos';
 
 function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     }
 
   // En agenda siempre se guarda como "confirmada" y siempre valida cupos
-  const ok = await verificarDisponibilidad(fecha, horario, trat.categoria, trat.duracion);
+  const durAgenda = duracionParaAgenda(trat);
+  const ok = await verificarDisponibilidad(fecha, horario, trat.categoria, durAgenda);
   if (!ok) {
     return NextResponse.json(
       {
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     email: '',
       tratamiento: trat.nombre,
       tratamientoPrecio: precio,
-      tratamientoDuracion: trat.duracion,
+      tratamientoDuracion: durAgenda,
       tratamientoCategoria: trat.categoria,
       fecha: String(fecha),
       horario: String(horario),

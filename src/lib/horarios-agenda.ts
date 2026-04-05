@@ -5,6 +5,18 @@
 
 export const SLOT_MINUTOS = 30;
 
+/**
+ * Por encima de esto se asume que `duracion` son minutos totales de un paquete (mal uso en agenda),
+ * no la duración de una sola cita. En solapes se trata como sesión estándar de 60 min.
+ */
+export const DURACION_MAX_SESION_SOLAPES_MIN = 180;
+
+export function normalizarDuracionSolapes(minutos: number, slotMin = SLOT_MINUTOS): number {
+  const d = Math.max(slotMin, Number(minutos) || slotMin);
+  if (d > DURACION_MAX_SESION_SOLAPES_MIN) return 60;
+  return d;
+}
+
 export function hhmmToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number);
   return (h || 0) * 60 + (m || 0);

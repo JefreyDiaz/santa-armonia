@@ -9,9 +9,17 @@ export interface TratamientoDef {
   id: string;
   nombre: string;
   precio: number;
+  /** Minutos (p. ej. total del paquete en corporales). */
   duracion: number;
   descripcion: string;
   precioEspecial?: string;
+  /** Si existe: minutos por cita para cupos y solapes en agenda (paquetes corporales). */
+  duracionAgenda?: number;
+}
+
+/** Duración que debe usarse para disponibilidad y campo `tratamiento_duracion` en reservas. */
+export function duracionParaAgenda(t: TratamientoDef): number {
+  return t.duracionAgenda ?? t.duracion;
 }
 
 export const ETIQUETA_CATEGORIA: Record<CategoriaTratamiento, string> = {
@@ -22,13 +30,14 @@ export const ETIQUETA_CATEGORIA: Record<CategoriaTratamiento, string> = {
 
 export const TRATAMIENTOS: Record<CategoriaTratamiento, TratamientoDef[]> = {
   corporales: [
-    { id: 'masajes-reductores', nombre: 'Masajes Reductores', precio: 900000, duracion: 900, descripcion: 'Tratamiento especializado para reducir grasa corporal y mejorar la silueta mediante técnicas avanzadas de masaje y aparatología. Paquete de 15 sesiones.' },
-    { id: 'masajes-moldeadores', nombre: 'Masajes Moldeadores', precio: 750000, duracion: 720, descripcion: 'Tratamiento especializado para moldear y tonificar el cuerpo, ideal para personas con poco tejido graso que buscan definir su figura. Paquete de 12 sesiones.' },
-    { id: 'levantamiento-gluteos', nombre: 'Levantamiento de Glúteos', precio: 950000, duracion: 600, descripcion: 'Tratamiento completo especializado para levantar, tonificar y dar forma a los glúteos mediante técnicas avanzadas. Paquete de 10 sesiones.' },
-    { id: 'tratamiento-anticelulitis', nombre: 'Tratamiento Anticelulitis', precio: 800000, duracion: 600, descripcion: 'Tratamiento especializado para combatir la celulitis mediante técnicas de drenaje linfático y electroestimulación. Paquete de 10 sesiones.' },
+    { id: 'masajes-reductores', nombre: 'Masajes Reductores', precio: 900000, duracion: 900, duracionAgenda: 60, descripcion: 'Tratamiento especializado para reducir grasa corporal y mejorar la silueta mediante técnicas avanzadas de masaje y aparatología. Paquete de 15 sesiones.' },
+    { id: 'masajes-moldeadores', nombre: 'Masajes Moldeadores', precio: 750000, duracion: 720, duracionAgenda: 60, descripcion: 'Tratamiento especializado para moldear y tonificar el cuerpo, ideal para personas con poco tejido graso que buscan definir su figura. Paquete de 12 sesiones.' },
+    { id: 'levantamiento-gluteos', nombre: 'Levantamiento de Glúteos', precio: 950000, duracion: 600, duracionAgenda: 60, descripcion: 'Tratamiento completo especializado para levantar, tonificar y dar forma a los glúteos mediante técnicas avanzadas. Paquete de 10 sesiones.' },
+    { id: 'tratamiento-anticelulitis', nombre: 'Tratamiento Anticelulitis', precio: 800000, duracion: 600, duracionAgenda: 60, descripcion: 'Tratamiento especializado para combatir la celulitis mediante técnicas de drenaje linfático y electroestimulación. Paquete de 10 sesiones.' },
     { id: 'tensamax-corporal', nombre: 'Tensamax', precio: 0, duracion: 60, descripcion: 'Tratamiento corporal con protocolo Tensamax según indicación.', precioEspecial: 'Por definir' },
     { id: 'quemador-de-grasa', nombre: 'Quemador de grasa', precio: 0, duracion: 60, descripcion: 'Sesión focalizada en complemento reductor y modelado.', precioEspecial: 'Por definir' },
     { id: 'sesion-masaje-moldeador', nombre: 'Sesión de masaje moldeador', precio: 0, duracion: 60, descripcion: 'Sesión individual de masaje moldeador para tonificar y definir.', precioEspecial: 'Por definir' },
+    { id: 'masaje-postoperatorio', nombre: 'Masaje postoperatorio', precio: 0, duracion: 60, descripcion: 'Masaje terapéutico adaptado al periodo de recuperación tras un procedimiento, según valoración y autorización.', precioEspecial: 'Por definir' },
   ],
   otros: [
     { id: 'depilacion-cejas', nombre: 'Depilación de Cejas', precio: 15000, duracion: 30, descripcion: 'Depilación profesional de cejas con cera para dar forma perfecta.' },

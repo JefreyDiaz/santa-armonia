@@ -286,9 +286,6 @@ export default function OtrosServiciosPage() {
             </h3>
             
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
               marginBottom: 'var(--spa-spacing-md)',
             }}>
               <span style={{
@@ -296,16 +293,10 @@ export default function OtrosServiciosPage() {
                 fontSize: '0.9rem',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '4px',
               }}>
-                ⏱️ Variable
-              </span>
-              <span style={{
-                color: 'var(--spa-primary)',
-                fontWeight: '700',
-                fontSize: '1.1rem',
-              }}>
-                $ Según Área
+                ⏱️ Duración variable según zona
               </span>
             </div>
 
@@ -430,20 +421,6 @@ export default function OtrosServiciosPage() {
                     </p>
                   )}
                   
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--spa-spacing-sm)',
-                  }}>
-                    <span style={{
-                      color: 'var(--spa-primary)',
-                      fontWeight: '700',
-                      fontSize: '1.3rem',
-                    }}>
-                      ${masaje.precio.toLocaleString('es-CO')}
-                    </span>
-                  </div>
                 </div>
 
                 <p style={{
@@ -592,15 +569,6 @@ export default function OtrosServiciosPage() {
                 </p>
               )}
 
-              <p style={{
-                color: 'var(--spa-primary)',
-                fontWeight: '700',
-                fontSize: '1.2rem',
-                marginBottom: 'var(--spa-spacing-md)',
-              }}>
-                {servicio.precioEspecial || (servicio.precio && servicio.precio > 0 ? `$${servicio.precio.toLocaleString('es-CO')}` : 'Según valoración')}
-              </p>
-
               {/* duración removida del listado */}
               
               <p style={{
@@ -703,16 +671,6 @@ export default function OtrosServiciosPage() {
               </div>
             ))}
           </div>
-
-          <p style={{
-            color: 'var(--spa-primary)',
-            fontSize: '1.2rem',
-            fontWeight: '600',
-            textAlign: 'center',
-            marginBottom: 'var(--spa-spacing-lg)',
-          }}>
-            {sueroTerapia.precio}
-          </p>
           
           <div style={{ textAlign: 'center' }}>
             <a
@@ -955,21 +913,6 @@ export default function OtrosServiciosPage() {
                   }}>
                     {servicio.descripcion}
                   </p>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 'var(--spa-spacing-md)',
-                  }}>
-                    <span style={{
-                      color: 'var(--spa-primary)',
-                      fontWeight: '700',
-                      fontSize: '1.1rem',
-                    }}>
-                      ${servicio.precio.toLocaleString('es-CO')}
-                    </span>
-                  </div>
 
                   <button
                     onClick={() => handleSelectService(servicio)}

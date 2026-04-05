@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { getTratamientoById } from '@/lib/tratamientos';
+import { duracionParaAgenda, getTratamientoById } from '@/lib/tratamientos';
 import {
   initDatabase,
   updateReservaClienteYTratamiento,
@@ -58,12 +58,13 @@ export async function PATCH(request: NextRequest) {
       precio = Math.round(n);
     }
 
+    const durAgenda = duracionParaAgenda(trat);
     if (r.estado === 'confirmada') {
       const ok = await verificarDisponibilidad(
         r.fecha,
         r.horario,
         trat.categoria,
-        trat.duracion,
+        durAgenda,
         Number(reservaId)
       );
       if (!ok) {
@@ -81,7 +82,7 @@ export async function PATCH(request: NextRequest) {
       telefono: String(telefono),
       tratamientoNombre: trat.nombre,
       tratamientoPrecio: precio,
-      tratamientoDuracion: trat.duracion,
+      tratamientoDuracion: durAgenda,
       tratamientoCategoria: trat.categoria,
     });
 

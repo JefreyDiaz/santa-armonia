@@ -1,5 +1,11 @@
 import { Pool } from 'pg';
-import { obtenerHorariosPorFechaConBuffer, obtenerSlotsOcupadosParaRango, SLOT_MINUTOS } from '@/lib/horarios-agenda';
+import {
+  obtenerHorariosPorFecha,
+  obtenerHorariosPorFechaConBuffer,
+  obtenerSlotsOcupadosParaRango,
+  normalizarDuracionSolapes,
+  SLOT_MINUTOS,
+} from '@/lib/horarios-agenda';
 
 // Pool de conexiones PostgreSQL
 let pool: Pool | null = null;
@@ -301,6 +307,84 @@ export async function crearReserva(reservaData: {
   }
 }
 
+type SlotCounts = { total: number; faciales: number; corporales: number; otros: number };
+
+/** Mapa de ocupación por slot de 30 min (misma lógica que verificarDisponibilidad). */
+async function buildSlotOccupancyMap(
+  fecha: string,
+  excluirReservaId?: number
+): Promise<Record<string, SlotCounts>> {
+  const pool = getPool();
+  const result =
+    excluirReservaId != null
+      ? await pool.query(
+          `SELECT horario, tratamiento_categoria, tratamiento_duracion
+           FROM reservas
+           WHERE fecha = $1 AND estado = 'confirmada' AND id <> $2`,
+          [fecha, excluirReservaId]
+        )
+      : await pool.query(
+          `SELECT horario, tratamiento_categoria, tratamiento_duracion
+           FROM reservas
+           WHERE fecha = $1 AND estado = 'confirmada'`,
+          [fecha]
+        );
+
+  const bySlot: Record<string, SlotCounts> = {};
+  const inc = (slot: string, cat: string) => {
+    if (!bySlot[slot]) bySlot[slot] = { total: 0, faciales: 0, corporales: 0, otros: 0 };
+    bySlot[slot].total += 1;
+    if (cat === 'faciales') bySlot[slot].faciales += 1;
+    if (cat === 'corporales') bySlot[slot].corporales += 1;
+    if (cat === 'otros') bySlot[slot].otros += 1;
+  };
+
+  for (const r of result.rows as Array<{ horario: string; tratamiento_categoria: string; tratamiento_duracion: number }>) {
+    const cat = (r.tratamiento_categoria || '').toLowerCase();
+    const durR = normalizarDuracionSolapes(Number(r.tratamiento_duracion));
+    const slotsR = obtenerSlotsOcupadosParaRango(r.horario, durR);
+    for (const s of slotsR) inc(s, cat);
+  }
+  return bySlot;
+}
+
+function evaluarCupoParaInicio(
+  fecha: string,
+  horario: string,
+  tratamientoCategoria: string,
+  tratamientoDuracion: number,
+  bySlot: Record<string, SlotCounts>
+): boolean {
+  const categoria = (tratamientoCategoria || '').toLowerCase();
+  const dur = normalizarDuracionSolapes(tratamientoDuracion);
+  const requestedSlots = obtenerSlotsOcupadosParaRango(horario, dur);
+  const slotsDia = new Set(obtenerHorariosPorFechaConBuffer(fecha, 1));
+  if (!slotsDia.has(horario)) return false;
+  for (const s of requestedSlots) {
+    if (!slotsDia.has(s)) return false;
+  }
+
+  for (const slot of requestedSlots) {
+    const current = bySlot[slot] || { total: 0, faciales: 0, corporales: 0, otros: 0 };
+    const hour = Number.parseInt((slot || '00:00').split(':')[0], 10);
+    const isAfternoon = hour >= 14;
+
+    if (!isAfternoon) {
+      if (current.total >= 1) return false;
+      continue;
+    }
+
+    if (categoria === 'faciales') {
+      if (current.faciales >= 1) return false;
+      if (current.total >= 2) return false;
+    } else {
+      if (current.total >= 2) return false;
+    }
+  }
+
+  return true;
+}
+
 // Función para verificar disponibilidad
 export async function verificarDisponibilidad(
   fecha: string,
@@ -311,81 +395,34 @@ export async function verificarDisponibilidad(
 ): Promise<boolean> {
   try {
     console.log('Verificando disponibilidad:', fecha, horario, tratamientoCategoria, tratamientoDuracion);
-    const pool = getPool();
-
-    const categoria = (tratamientoCategoria || '').toLowerCase();
-
-    const dur = Number(tratamientoDuracion) || SLOT_MINUTOS;
-    const requestedSlots = obtenerSlotsOcupadosParaRango(horario, dur);
-
-    // Validar que el inicio exista en la agenda y que no se salga del horario laboral
-    // Para validar solapes, permitimos 1 slot de buffer al final (p.ej. 19:00)
-    // sin que eso aparezca como opción de inicio en la UI.
-    const slotsDia = new Set(obtenerHorariosPorFechaConBuffer(fecha, 1));
-    if (!slotsDia.has(horario)) return false;
-    for (const s of requestedSlots) {
-      if (!slotsDia.has(s)) return false; // no permitir que una reserva “se salga” al cierre
-    }
-
-    // Traer todas las reservas confirmadas del día y expandir a slots de 30 min
-    const result =
-      excluirReservaId != null
-        ? await pool.query(
-            `SELECT horario, tratamiento_categoria, tratamiento_duracion
-             FROM reservas
-             WHERE fecha = $1 AND estado = 'confirmada' AND id <> $2`,
-            [fecha, excluirReservaId]
-          )
-        : await pool.query(
-            `SELECT horario, tratamiento_categoria, tratamiento_duracion
-             FROM reservas
-             WHERE fecha = $1 AND estado = 'confirmada'`,
-            [fecha]
-          );
-
-    type Counts = { total: number; faciales: number; corporales: number; otros: number };
-    const bySlot: Record<string, Counts> = {};
-    const inc = (slot: string, cat: string) => {
-      if (!bySlot[slot]) bySlot[slot] = { total: 0, faciales: 0, corporales: 0, otros: 0 };
-      bySlot[slot].total += 1;
-      if (cat === 'faciales') bySlot[slot].faciales += 1;
-      if (cat === 'corporales') bySlot[slot].corporales += 1;
-      if (cat === 'otros') bySlot[slot].otros += 1;
-    };
-
-    for (const r of result.rows as Array<{ horario: string; tratamiento_categoria: string; tratamiento_duracion: number }>) {
-      const cat = (r.tratamiento_categoria || '').toLowerCase();
-      const durR = Number(r.tratamiento_duracion) || SLOT_MINUTOS;
-      const slotsR = obtenerSlotsOcupadosParaRango(r.horario, durR);
-      for (const s of slotsR) inc(s, cat);
-    }
-
-    // Evaluar reglas por CADA slot que ocuparía la reserva nueva
-    for (const slot of requestedSlots) {
-      const current = bySlot[slot] || { total: 0, faciales: 0, corporales: 0, otros: 0 };
-      const hour = Number.parseInt((slot || '00:00').split(':')[0], 10);
-      const isAfternoon = hour >= 14;
-
-      if (!isAfternoon) {
-        // Mañana: 1 cita total por slot
-        if (current.total >= 1) return false;
-        continue;
-      }
-
-      // Tarde: capacidad 2 total, no 2 faciales en el mismo slot
-      if (categoria === 'faciales') {
-        if (current.faciales >= 1) return false;
-        if (current.total >= 2) return false;
-      } else {
-        if (current.total >= 2) return false;
-      }
-    }
-
-    return true;
+    const bySlot = await buildSlotOccupancyMap(fecha, excluirReservaId);
+    return evaluarCupoParaInicio(fecha, horario, tratamientoCategoria, tratamientoDuracion, bySlot);
   } catch (error) {
     console.error('Error al verificar disponibilidad:', error);
     return false;
   }
+}
+
+/**
+ * Horas de inicio (HH:MM) no disponibles para una nueva reserva con esa categoría y duración.
+ * Una sola lectura a BD; alineado con verificarDisponibilidad.
+ */
+export async function listarHorariosOcupadosParaCategoria(
+  fecha: string,
+  tratamientoCategoria: string,
+  duracionMinutos: number
+): Promise<string[]> {
+  const bySlot = await buildSlotOccupancyMap(fecha);
+  const inicios = obtenerHorariosPorFecha(fecha);
+  const dur = Number(duracionMinutos);
+  const durEfectiva = Number.isFinite(dur) && dur > 0 ? dur : 60;
+  const ocupados: string[] = [];
+  for (const h of inicios) {
+    if (!evaluarCupoParaInicio(fecha, h, tratamientoCategoria, durEfectiva, bySlot)) {
+      ocupados.push(h);
+    }
+  }
+  return ocupados;
 }
 
 // Función para obtener todas las reservas
